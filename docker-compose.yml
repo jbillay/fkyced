@@ -1,0 +1,75 @@
+version: '3.2'
+services:
+  fkyced-session:
+    container_name: fkyced-session
+    image: redis
+    healthcheck:
+      test: exit 0
+  fkyced-db:
+    container_name: fkyced-db
+    image: mysql:5.7
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - "dbdata:/data/db"
+    environment:
+      MYSQL_ROOT_PASSWORD: noofs
+      MYSQL_USER: fkyced
+      MYSQL_PASSWORD: fkyced
+      MYSQL_DATABASE: camunda_db
+    healthcheck:
+      test: exit 0
+  fkyced-engine:
+    container_name: fkyced-engine
+    image: camunda/camunda-bpm-platform:latest
+    ports:
+      - "8080:8080"
+    environment:
+      DB_DRIVER: com.mysql.jdbc.Driver
+      DB_URL: jdbc:mysql://fkyced-db:3306/camunda_db?autoReconnect=true
+      DB_USERNAME: fkyced
+      DB_PASSWORD: fkyced
+      WAIT_FOR: fkyced-db:3306
+      WAIT_FOR_TIMEOUT: 60
+    depends_on:
+      - fkyced-db
+  fkyced-app:
+    container_name: fkyced-app
+    build: ./app/
+    volumes:
+      - ./app:/home/app/
+    depends_on:
+      - fkyced-session
+      - fkyced-db
+      - fkyced-engine
+    links:
+      - fkyced-db
+      - fkyced-session
+      - fkyced-engine
+    ports:
+      - '4242:4242' # expose ports - HOST:CONTAINER
+    environment:
+      - DEBUG=
+      - NODE_ENV=development
+  fkyced-admin:
+    container_name: fkyced-admin
+    build: ./admin/
+    volumes:
+      - ./admin:/home/admin/
+    depends_on:
+      - fkyced-session
+      - fkyced-db
+      - fkyced-engine
+    links:
+      - fkyced-db
+      - fkyced-session
+      - fkyced-engine
+    ports:
+      - '9615:9615' # expose ports - HOST:CONTAINER
+    environment:
+      - DEBUG=
+      - NODE_ENV=development
+volumes:
+  dbdata:
+    driver: local

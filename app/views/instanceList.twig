@@ -1,0 +1,11 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+
+<ul>
+{% for instance in instances %}
+  <li><a href="/taskList/{{ instance.id }}">{{ instance.id }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}

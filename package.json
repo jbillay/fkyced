@@ -1,0 +1,22 @@
+{
+  "name": "fkyced",
+  "version": "0.0.1",
+  "description": "Fast Client Onboarding for investment institutions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbillay/fkyced.git"
+  },
+  "keywords": [
+    "KYC"
+  ],
+  "author": "Jeremy Billay",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jbillay/fkyced/issues"
+  },
+  "homepage": "https://github.com/jbillay/fkyced#readme"
+}

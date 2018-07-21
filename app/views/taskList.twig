@@ -1,0 +1,17 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+  <h1>{{title}}</h1>
+
+  <h2>Process Instance : {{processInstance}}</h2>
+
+  <ul>
+    {% for taskHistory in taskHistory %}
+      <li>{{ taskHistory.name }}</li>
+    {% endfor %}
+    {% for task in tasks %}
+      <li><a href="/displayTask/{{ task.id }}">{{ task.name }}</a></li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
+    <h2>My Processes</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group mr-2">
+          <button class="btn btn-sm btn-outline-secondary">Share</button>
+          <button class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+          <span data-feather="calendar">Due this week</span>
+        </button>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped table-sm">
+      <thead><tr><th>Id</th><th>Name</th><th>Start</th><th>End</th><th>Duration</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for process in processes %}
+          <tr>
+            <th scope="row"><a href="/taskList/{{process.id}}">{{ process.id }}</a></th>
+            <td>{{ process.processDefinitionName }}</td>
+            <td>{{ process.startTime | date("m/d/Y") }}</td>
+            <td>{{ process.endTime | date("m/d/Y") }}</td>
+            <td>{{ process.durationInMillis | round }}</td>
+            <td>{{ process.state }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+<a href="/startProcess/small-test/8" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">
+  New Onboarding
+</a>
+
+{% endblock %}
