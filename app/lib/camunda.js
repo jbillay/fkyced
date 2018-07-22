@@ -1,13 +1,13 @@
-const request = require('axios');
-const _ = require('lodash');
+const request = require('axios')
+const _ = require('lodash')
+const config = require('../config')
 
-request.defaults.baseURL = 'http://localhost:8080/engine-rest';
 request.defaults.headers.post['Content-Type'] = 'application/json';
 
 const searchProcess = async (processName, processVersion) => {
   // GET /process-definition
   try {
-    const response = await request.get('/process-definition');
+    const response = await request.get(config.engineApi + '/process-definition');
     const data = response.data;
     const process = _.find(data, { 'key': processName, 'version': processVersion });
     return process;
@@ -19,7 +19,7 @@ const searchProcess = async (processName, processVersion) => {
 const getInstanceHistory = async processDefinitionId => {
   // GET /history/process-instance/
   try {
-    const response = await request.get('/history/process-instance?processDefinitionId=' + processDefinitionId);
+    const response = await request.get(config.engineApi + '/history/process-instance?processDefinitionId=' + processDefinitionId);
     const executedProcesses = response.data
     return executedProcesses
   } catch(error) {
@@ -30,7 +30,7 @@ const getInstanceHistory = async processDefinitionId => {
 const getInstanceTaskHistory = async processInstanceId => {
   // GET /history/task?processInstanceId=
   try {
-    const response = await request.get('/history/task?processInstanceId=' + processInstanceId);
+    const response = await request.get(config.engineApi + '/history/task?processInstanceId=' + processInstanceId);
     const taskHistoryList = response.data
     return taskHistoryList
   } catch(error) {
@@ -41,7 +41,7 @@ const getInstanceTaskHistory = async processInstanceId => {
 const getStartFormKey = async processId => {
   // GET /process-definition/{id}/startForm
   try {
-    const response = await request.get('/process-definition/' + processId + '/startForm');
+    const response = await request.get(config.engineApi + '/process-definition/' + processId + '/startForm');
     const formKey = response.data
     return formKey;
   } catch(error) {
@@ -52,7 +52,7 @@ const getStartFormKey = async processId => {
 const getStartFormVariables = async processId => {
   // GET /process-definition/{id}/form-variables
   try {
-    const response = await request.get('/process-definition/' + processId + '/form-variables');
+    const response = await request.get(config.engineApi + '/process-definition/' + processId + '/form-variables');
     const formVariables = response.data
     return formVariables;
   } catch(error) {
@@ -63,7 +63,7 @@ const getStartFormVariables = async processId => {
 const getProcessXML = async processId => {
   // GET /process-definition
   try {
-    const response = await request.get('/process-definition/' + processId + '/xml');
+    const response = await request.get(config.engineApi + '/process-definition/' + processId + '/xml');
     const xml = response.data.bpmn20Xml;
     return xml;
   } catch(error) {
@@ -73,7 +73,7 @@ const getProcessXML = async processId => {
 
 const getInstances = async processId => {
   try {
-    const response = await request.get('/process-instance?processDefinitionId=' + processId);
+    const response = await request.get(config.engineApi + '/process-instance?processDefinitionId=' + processId);
     const data = response.data;
     return data;
   } catch(error) {
@@ -108,7 +108,7 @@ const submitStartForm = async (processId, variables)  => {
 const getOpenTasks = async processInstanceId => {
   // GET /task?assignee=anAssignee&delegationState=RESOLVED&maxPriority=50
   try {
-    const response = await request.get('/task?processInstanceId=' + processInstanceId);
+    const response = await request.get(config.engineApi + '/task?processInstanceId=' + processInstanceId);
     const tasks = response.data;
     return tasks;
   } catch(error) {
@@ -119,7 +119,7 @@ const getOpenTasks = async processInstanceId => {
 const getFormVariable = async taskId => {
   // GET /task/{id}/form-variables
   try {
-    const response = await request.get('/task/' + taskId + '/form-variables');
+    const response = await request.get(config.engineApi + '/task/' + taskId + '/form-variables');
     const variables = response.data;
     return variables;
   } catch(error) {
@@ -130,7 +130,7 @@ const getFormVariable = async taskId => {
 const getRenderedForm = async taskId => {
   // GET /task/{id}/rendered-form
   try {
-    const response = await request.get('/task/' + taskId + '/rendered-form');
+    const response = await request.get(config.engineApi + '/task/' + taskId + '/rendered-form');
     const htmlForm = response.data;
     return htmlForm;
   } catch(error) {
@@ -140,7 +140,7 @@ const getRenderedForm = async taskId => {
 
 const getTask = async taskId => {
   try {
-    const response = await request.get('/task/' + taskId);
+    const response = await request.get(config.engineApi + '/task/' + taskId);
     const task = response.data;
     return task;
   } catch(error) {
@@ -173,7 +173,7 @@ const buildTaskVariables = (workflowData, taskData) => {
 const completeTask = async (taskId, variables) => {
   // POST /task/anId/complete
   try {
-    const response = await request.post('/task/' + taskId + '/complete', variables);
+    const response = await request.post(config.engineApi + '/task/' + taskId + '/complete', variables);
   } catch(error) {
     console.error(error);
   }
@@ -182,7 +182,7 @@ const completeTask = async (taskId, variables) => {
 const getUserInfo = async userId => {
   // GET /user/{id}/profile
   try {
-    const response = await request.get('/user/' + userId + '/profile')
+    const response = await request.get(config.engineApi + '/user/' + userId + '/profile')
     const userInfo = response.data
     return userInfo
   } catch(error) {
@@ -197,7 +197,7 @@ const verifyUserIdentity = async (username, password) => {
       username: username,
       password: password
     }
-    const response = await request.post('/identity/verify', body);
+    const response = await request.post(config.engineApi + '/identity/verify', body);
     const user = response.data;
     if (user.authenticated) {
       return user;

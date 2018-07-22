@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router();
 const camunda = require('../lib/camunda')
+const fkycedAdmin  =require('../lib/fkycedAdmin')
 const formBuilder = require('../lib/formBuilder')
 const _ = require('lodash')
 
@@ -31,11 +32,16 @@ router.get('/home', async function(req, res, next) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
-    const processDefinition = await camunda.searchProcess('small-test', 8)
-    const processInstancesActivity = await camunda.getInstanceHistory(processDefinition.id)
-    _.map(processInstancesActivity, function (process)
-          { return process.durationInMillis = parseInt(process.durationInMillis) / 60000 })
-    res.render('index', { user: userInfo, processes: processInstancesActivity })
+    const currentProcess = await fkycedAdmin.getCurrentProcess()
+    const processDefinition = await camunda.searchProcess(currentProcess.key, currentProcess.version)
+    if (processDefinition && processDefinition.id) {
+      const processInstancesActivity = await camunda.getInstanceHistory(processDefinition.id)
+      _.map(processInstancesActivity, function (process)
+            { return process.durationInMillis = parseInt(process.durationInMillis) / 60000 })
+      res.render('index', { user: userInfo, processes: processInstancesActivity, currentProcess: currentProcess })
+    } else {
+      res.render('error', { user: userInfo, message: 'Process not found' })
+    }
   }
 });
 
@@ -95,7 +101,8 @@ router.post('/startProcess', async function(req, res, next) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
-    const processDefinition = await camunda.searchProcess('small-test', 1)
+    const currentProcess = await fkycedAdmin.getCurrentProcess()
+    const processDefinition = await camunda.searchProcess(currentProcess.key, currentProcess.version)
     const processInstance = await camunda.startProcess(processDefinition.id)
     res.redirect('/taskList/' + processInstance.id)
   }

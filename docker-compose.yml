@@ -13,11 +13,11 @@ services:
       - "3306:3306"
     volumes:
       - "dbdata:/data/db"
+      - ./db/init:/docker-entrypoint-initdb.d
     environment:
       MYSQL_ROOT_PASSWORD: noofs
       MYSQL_USER: fkyced
       MYSQL_PASSWORD: fkyced
-      MYSQL_DATABASE: camunda_db
     healthcheck:
       test: exit 0
   fkyced-engine:
@@ -39,6 +39,7 @@ services:
     build: ./app/
     volumes:
       - ./app:/home/app/
+      - ./app/node_modules:/home/app/node_modules
     depends_on:
       - fkyced-session
       - fkyced-db
@@ -57,6 +58,7 @@ services:
     build: ./admin/
     volumes:
       - ./admin:/home/admin/
+      - ./admin/node_modules:/home/admin/node_modules
     depends_on:
       - fkyced-session
       - fkyced-db

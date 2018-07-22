@@ -1,5 +1,7 @@
 module.exports = {
   secret: 'S€cr€tFKYC€dc',
+  engineApi: 'http://fkyced-engine:8080/engine-rest',
+  adminApi: 'http://fkyced-admin:9615',
   db:
     'mongodb://heroku_38xk56f1:rcujmnmigkvbh8pmeloshfvd8f@ds211309.mlab.com:11309/heroku_38xk56f1',
   redis:
