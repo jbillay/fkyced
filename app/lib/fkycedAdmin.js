@@ -6,7 +6,7 @@ request.defaults.headers.post['Content-Type'] = 'application/json'
 
 const getCurrentProcess = async () => {
   try {
-    const response = await request.get(config.adminApi + '/currentProcess')
+    const response = await request.get(config.adminApi + '/api/currentProcess')
     const processInfo = response.data
     return processInfo
   } catch(error) {
@@ -14,4 +14,18 @@ const getCurrentProcess = async () => {
   }
 }
 
-module.exports = { getCurrentProcess }
+const getForm = async (id) => {
+  try {
+    const response = await request.get(config.adminApi + '/api/form?id=' + id)
+    if (response.data.status === 'success') {
+      const form = response.data.form
+      return form
+    } else {
+      console.error(response.data.error)
+    }
+  } catch(error) {
+    console.error(error)
+  }
+}
+
+module.exports = { getCurrentProcess, getForm }

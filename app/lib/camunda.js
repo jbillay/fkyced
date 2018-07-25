@@ -83,9 +83,7 @@ const getInstances = async processId => {
 
 const startProcess = async processId => {
   try {
-    const response = await request.post(
-      '/process-definition/' + processId + '/start',
-      {"variables": {"amount": {"value":555,"type":"long"}, "item": {"value":"item-xyz"} } });
+    const response = await request.post(config.engineApi + '/process-definition/' + processId + '/start');
     const data = response.data;
     return data;
   } catch(error) {
@@ -96,7 +94,7 @@ const startProcess = async processId => {
 const submitStartForm = async (processId, variables)  => {
   console.log(variables)
   try {
-    const response = await request.post(
+    const response = await request.post(config.engineApi +
       '/process-definition/' + processId + '/submit-form', variables);
     const data = response.data;
     return data;

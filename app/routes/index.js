@@ -1,5 +1,5 @@
 const express = require('express')
-const router = express.Router();
+const router = express.Router()
 const camunda = require('../lib/camunda')
 const fkycedAdmin  =require('../lib/fkycedAdmin')
 const formBuilder = require('../lib/formBuilder')
@@ -28,7 +28,7 @@ router.get('/logout', async function(req, res, next) {
 
 router.get('/home', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -38,16 +38,16 @@ router.get('/home', async function(req, res, next) {
       const processInstancesActivity = await camunda.getInstanceHistory(processDefinition.id)
       _.map(processInstancesActivity, function (process)
             { return process.durationInMillis = parseInt(process.durationInMillis) / 60000 })
-      res.render('index', { user: userInfo, processes: processInstancesActivity, currentProcess: currentProcess })
+      res.render('index', { user: userInfo, processes: processInstancesActivity, currentProcess: currentProcess, title: 'Home Page' })
     } else {
-      res.render('error', { user: userInfo, message: 'Process not found' })
+      res.render('error', { user: userInfo, message: 'Process not found', title: 'Home Page' })
     }
   }
-});
+})
 
 router.get('/processInstance/:name/:version', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -57,11 +57,11 @@ router.get('/processInstance/:name/:version', async function(req, res, next) {
     const processInstances = await camunda.getInstances(processDefinition.id);
     res.render('instanceList', { user: userInfo, instances: processInstances })
   }
-});
+})
 
 router.get('/startProcess/:name/:version', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -72,17 +72,17 @@ router.get('/startProcess/:name/:version', async function(req, res, next) {
     if (initForm.key) {
       const xml = await camunda.getProcessXML(processDefinition.id);
       const builtForm = await formBuilder.createByTaskType(xml, 'bpmn:startEvent', processDefinition.id, '/submitStartForm');
-      res.render('taskDisplay', { user: userInfo, form: builtForm, title: 'Start Process' });
+      res.render('taskDisplayIntForm', { user: userInfo, form: builtForm, title: 'Start Process' });
     } else {
       const processInstance = await camunda.startProcess(processDefinition.id);
       res.redirect('/taskList/' + processInstance.id);
     }
   }
-});
+})
 
 router.post('/submitStartForm', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -93,11 +93,11 @@ router.post('/submitStartForm', async function(req, res, next) {
     const processInstance = await camunda.submitStartForm(procesId, variables);
     res.redirect('/taskList/' + processInstance.id);
   }
-});
+})
 
 router.post('/startProcess', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -106,11 +106,11 @@ router.post('/startProcess', async function(req, res, next) {
     const processInstance = await camunda.startProcess(processDefinition.id)
     res.redirect('/taskList/' + processInstance.id)
   }
-});
+})
 
 router.get('/taskList/:processInstanceId', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -126,7 +126,7 @@ router.get('/taskList/:processInstanceId', async function(req, res, next) {
 
 router.get('/displayTask/:taskId', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -134,13 +134,18 @@ router.get('/displayTask/:taskId', async function(req, res, next) {
     const task = await camunda.getTask(taskId)
     const xml = await camunda.getProcessXML(task.processDefinitionId)
     const builtForm = await formBuilder.createByTaskId(xml, task.taskDefinitionKey, taskId)
-    res.render('taskDisplay', { user:userInfo, form: builtForm, title: task.name })
+    if (builtForm.type === 'internal') {
+      res.render('taskDisplayIntForm', { user:userInfo, form: builtForm.form, title: task.name })
+    } else if (builtForm.type === 'external') {
+      const form = await fkycedAdmin.getForm(builtForm.form)
+      res.render('taskDisplayExtForm', { user:userInfo, form: form, task: task, title: task.name })
+    }
   }
 })
 
 router.post('/completeTask/', async function(req, res, next) {
   const user = req.cookies.currentUser
-  if (!user.authenticated) {
+  if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)

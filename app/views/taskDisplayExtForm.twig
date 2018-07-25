@@ -1,0 +1,33 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+<h1>{{task.name}}</h1>
+
+<form id="formDisplay" action="/completeTask" method="POST">
+</form>
+
+{% endblock %}
+
+{% block script %}
+  {{ parent() }}
+  <script src="/javascripts/jquery-ui.min.js"></script>
+  <script src="/javascripts/form-render.min.js"></script>
+
+  <script>
+    jQuery(function($) {
+      const container = document.getElementById('formDisplay')
+      const formData = JSON.parse({{ form.formStructure }})
+      const formRenderOpts = {
+        container,
+        formData
+      };
+      $(container).formRender(formRenderOpts)
+      $('<input>').attr({
+        type: 'hidden',
+        id: 'refId',
+        name: 'refId',
+        value: '{{ task.id }}'
+      }).appendTo(container)
+    });
+  </script>
+{% endblock %}

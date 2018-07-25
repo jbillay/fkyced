@@ -143,15 +143,27 @@ const createByTaskId = async function (xml, taskKey, taskId) {
               if (listOfTasks[taskType][task] &&
                   listOfTasks[taskType][task]['$'] &&
                   listOfTasks[taskType][task]['$']['id'] &&
-                  listOfTasks[taskType][task]['$']['id'] === taskKey) {
-                formInfo = listOfTasks[taskType][task]['bpmn:extensionElements'];
+                  listOfTasks[taskType][task]['$']['id'] === taskKey)
+                {
+                  if (listOfTasks[taskType][task]['$']['camunda:formKey']) {
+                    const extFormName = listOfTasks[taskType][task]['$']['camunda:formKey']
+                    formInfo = { type: 'external', form: extFormName }
+                  }
+                  else {
+                    const intForm = listOfTasks[taskType][task]['bpmn:extensionElements']
+                    formInfo = { type: 'internal', form: intForm }
+                  }
+                }
               }
             }
-          }
           if (formInfo) {
-            const formFields = getFormFields(formInfo)
-            const form = buildForm(formFields, taskId, '/completeTask')
-            resolve(form)
+            if (formInfo.type === 'internal') {
+              const formFields = getFormFields(formInfo.form)
+              const form = buildForm(formFields, taskId, '/completeTask')
+              resolve({ type: formInfo.type, form: form })
+            } else if (formInfo.type === 'external') {
+              resolve({ type: formInfo.type, form: formInfo.form })
+            }
           } else {
             resolve(null)
           }
