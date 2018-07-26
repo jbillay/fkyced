@@ -1,0 +1,55 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+  <h3>New Form</h3>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    Issue when we save the form : {{ error }}
+  </div>
+  {% endif %}
+  <form id="formForm" action="/editForm/{{ form.id }}" method="POST">
+    <div class="form-group">
+      <label for="formId">identifier</label>
+      <input type="text" class="form-control" id="formId" name="formId" aria-describedby="identifierHelp" placeholder="Enter form identifier" value="{{ form.formId }}">
+      <small id="identifierHelp" class="form-text text-muted">The ID of the form needs to be unique.</small>
+    </div>
+    <div class="form-group">
+      <label for="formName">Name</label>
+      <input type="text" class="form-control" id="formName" name="formName" aria-describedby="nameHelp" placeholder="Enter form Name"  value="{{ form.formName }}">
+      <small id="nameHelp" class="form-text text-muted">Define a name for the form.</small>
+    </div>
+    <div class="form-group">
+      <label for="formEditor">Formular</label>
+      <div id="formEditor" name="formEditor"></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+  </form>
+{% endblock %}
+
+{% block script %}
+  {{ parent() }}
+  <script src="/javascripts/jquery-ui.min.js"></script>
+  <script src="/javascripts/form-builder.min.js"></script>
+
+  <script>
+    jQuery(function($) {
+      const formData = {{ form.formStructure }}
+      const options = {
+        showActionButtons: false,
+        dataType: 'json',
+        formData: formData
+      }
+      const formBuilder = $(document.getElementById('formEditor')).formBuilder(options)
+      $('#formForm').submit(function (event) {
+        event.preventDefault()
+        $('<input>').attr({
+          type: 'hidden',
+          id: 'data',
+          name: 'data',
+          value: formBuilder.actions.getData('json', true)
+        }).appendTo('#formForm')
+        this.submit()
+      })
+    });
+  </script>
+{% endblock %}

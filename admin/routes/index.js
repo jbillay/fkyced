@@ -88,6 +88,50 @@ router.get('/forms', async function(req, res, next) {
   }
 })
 
+router.get('/deleteForm/:id', async function(req, res, next) {
+  const user = req.cookies.currentAdminUser
+  const formId = req.params.id
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    const forms = await models.fkycedForms.findOne({ where: { id : formId }}).then(function (form) {
+      form.destroy()
+    })
+    res.redirect('/forms')
+  }
+})
+
+router.post('/editForm/:id', async function(req, res, next) {
+  const user = req.cookies.currentAdminUser
+  const formId = req.params.id
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    let form = await models.fkycedForms.findOne({ where: { id : formId }})
+    form.formId = req.body.formId
+    form.formName = req.body.formName
+    form.formStructure = JSON.stringify(req.body.data.replace(/(?:\\[rnt]|[\r\n\t]+)+/g, ""))
+    try {
+      const newForm = await form.save()
+      res.redirect('/forms')
+    } catch (error) {
+      res.render('editForm', { user: userInfo, error: error, form: form })
+    }
+  }
+})
+
+router.get('/editForm/:id', async function(req, res, next) {
+  const user = req.cookies.currentAdminUser
+  const formId = req.params.id
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    const userInfo = await camunda.getUserInfo(user.authenticatedUser)
+    const form = await models.fkycedForms.findOne({ where: { id : formId }})
+    res.render('editForm', { user: userInfo, form: form })
+  }
+})
+
 router.get('/newForm', async function(req, res, next) {
   const user = req.cookies.currentAdminUser
   if (typeof user === "undefined" || !user.authenticated) {

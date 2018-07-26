@@ -13,13 +13,14 @@
   </div>
   <div class="table-responsive">
     <table class="table table-striped table-sm">
-      <thead><tr><th>Id</th><th>Name</th><th>Creation Date</th></tr></thead>
+      <thead><tr><th>Id</th><th>Name</th><th>Creation Date</th><th>Actions</th></tr></thead>
       <tbody>
         {% for form in forms %}
           <tr>
-            <th scope="row"><a href="/editForm/{{ form.formId }}">{{ form.formId }}</a></th>
+            <th scope="row"><a href="/editForm/{{ form.id }}">{{ form.formId }}</a></th>
             <td>{{ form.formName }}</td>
             <td>{{ form.createdAt | date("m/d/Y") }}</td>
+            <td><a href="/deleteForm/{{ form.id }}"><i class="far fa-trash-alt"></i></a></td>
           </tr>
         {% endfor %}
       </tbody>
