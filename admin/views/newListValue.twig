@@ -1,0 +1,26 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+  <h3>New Value for list {{ list.name }}</h3>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    Issue when we save the list : {{ error }}
+  </div>
+  {% endif %}
+  <form id="listValueForm" action="/list/value/new/{{ list.id }}" method="POST">
+    <div class="form-group">
+      <label for="listName">Name</label>
+      <input type="text" class="form-control" id="listValueName" name="listValueName" aria-describedby="nameHelp" placeholder="Enter list value name">
+      <small id="nameHelp" class="form-text text-muted">Define a name for your value.</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+{% endblock %}
+
+{% block script %}
+  {{ parent() }}
+  <script src="/javascripts/jquery-ui.min.js"></script>
+  <script>
+    jQuery(function($) {}})
+  </script>
+{% endblock %}

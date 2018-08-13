@@ -1,0 +1,58 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+  <h3>New List</h3>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    Issue when we save the list : {{ error }}
+  </div>
+  {% endif %}
+  <form id="listForm" action="/list/edit/{{ list.id }}" method="POST">
+    <div class="form-group">
+      <label for="listName">Name</label>
+      <input type="text" class="form-control" id="listName" name="listName" aria-describedby="nameHelp" placeholder="Enter list name" value="{{ list.name }}">
+      <small id="nameHelp" class="form-text text-muted">Define a name for your list. Name needs to be unique.</small>
+    </div>
+    <div class="form-group">
+      <label for="listParentId">Parent List (only for nested list)</label>
+      <select class="form-control" id="listParentId" name="listParentId">
+        <option></option>
+        {% for parentList in lists if parentList.id != list.id %}
+          <option value="{{ parentList.id }}">{{ parentList.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="listSorted" name="listSorted" {% if list.sorted == true %} checked {% endif %}>
+      <label class="form-check-label" for="listSorted">List sorted by alphabetical order</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+  <h2>List of values</h2>
+  <div class="table-responsive">
+    <table class="table table-striped table-sm">
+      <thead><tr><th>Name</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for id, name in values %}
+          <tr>
+            <td>{{ name }}</td>
+            <td><a href="/list/value/edit/{{ list.id }}/{{ id }}"><i class="far fa-edit"></i></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <a href="/list/value/new/{{ list.id }}" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">
+    New Value
+  </a>
+
+{% endblock %}
+
+{% block script %}
+  {{ parent() }}
+  <script src="/javascripts/jquery-ui.min.js"></script>
+  <script>
+    jQuery(function($) {}})
+  </script>
+{% endblock %}

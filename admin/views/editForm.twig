@@ -7,7 +7,7 @@
     Issue when we save the form : {{ error }}
   </div>
   {% endif %}
-  <form id="formForm" action="/editForm/{{ form.id }}" method="POST">
+  <form id="formForm" action="/form/edit/{{ form.id }}" method="POST">
     <div class="form-group">
       <label for="formId">identifier</label>
       <input type="text" class="form-control" id="formId" name="formId" aria-describedby="identifierHelp" placeholder="Enter form identifier" value="{{ form.formId }}">

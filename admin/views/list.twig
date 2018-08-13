@@ -1,9 +1,10 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
+  <p>List Management</p>
 
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
-    <h2>My Forms</h2>
+    <h2>My Lists</h2>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group mr-2">
           <button class="btn btn-sm btn-outline-secondary">Share</button>
@@ -13,21 +14,24 @@
   </div>
   <div class="table-responsive">
     <table class="table table-striped table-sm">
-      <thead><tr><th>Id</th><th>Name</th><th>Creation Date</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Id</th><th>Name</th><th>Parent Id</th><th>Sorted</th><th>Actions</th></tr></thead>
       <tbody>
-        {% for form in forms %}
+        {% for list in lists %}
           <tr>
-            <th scope="row"><a href="/form/edit/{{ form.id }}">{{ form.formId }}</a></th>
-            <td>{{ form.formName }}</td>
-            <td>{{ form.createdAt | date("m/d/Y") }}</td>
-            <td><a href="/form/delete/{{ form.id }}"><i class="far fa-trash-alt"></i></a></td>
+            <th scope="row"><a href="/list/edit/{{ list.id }}">{{ list.id }}</a></th>
+            <td>{{ list.name }}</td>
+            <td>{{ list.parentId }}</td>
+            <td>{{ list.sorted }}</td>
+            <td><a href="/list/delete/{{ list.id }}"><i class="far fa-trash-alt"></i></a></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
-  <a href="/form/new" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">
-    New Form
+  <a href="/list/new" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">
+    New List
   </a>
+
+
 {% endblock %}
