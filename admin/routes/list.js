@@ -100,7 +100,34 @@ router.get('/value/edit/:listId/:id', async function(req, res, next) {
   if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
-    res.redirect('/list')
+    const userInfo = await camunda.getUserInfo(user.authenticatedUser)
+    const list = await models.fkycedLists.findOne({ where: { id : listId }})
+    const values = JSON.parse(list.valueList)
+    const value = { id: valueId, name: values[valueId] }
+    res.render('editListValue', { user: userInfo, list: list, value: value })
+  }
+})
+
+router.post('/value/edit/:listId', async function(req, res, next) {
+  const user = req.cookies.currentAdminUser
+  const listId = req.params.listId
+  const valueName = req.body.listValueName
+  const valueId = req.body.listValueId
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    const list = await models.fkycedLists.findOne({ where: { id : listId }})
+    let values = JSON.parse(list.valueList)
+    values[valueId] = valueName
+    list.valueList = JSON.stringify(values)
+    try {
+      const newList = await list.save()
+      res.redirect('/list/edit/' + listId)
+    } catch (error) {
+      const userInfo = await camunda.getUserInfo(user.authenticatedUser)
+      const lists = await models.fkycedLists.findAll()
+      res.render('editList', { user: userInfo, error: error, list: list, list: lists, values: values })
+    }
   }
 })
 
@@ -123,7 +150,19 @@ router.post('/value/new/:listId', async function(req, res, next) {
   if (typeof user === "undefined" || !user.authenticated) {
     res.redirect('/')
   } else {
-    res.redirect('/list')
+    const list = await models.fkycedLists.findOne({ where: { id : listId }})
+    let values = JSON.parse(list.valueList)
+    const nextId = parseInt(_.max(Object.keys(values))) + 1
+    values[nextId] = valueName
+    list.valueList = JSON.stringify(values)
+    try {
+      const newList = await list.save()
+      res.redirect('/list/edit/' + listId)
+    } catch (error) {
+      const userInfo = await camunda.getUserInfo(user.authenticatedUser)
+      const lists = await models.fkycedLists.findAll()
+      res.render('editList', { user: userInfo, error: error, list: list, list: lists, values: values })
+    }
   }
 })
 

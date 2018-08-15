@@ -10,6 +10,7 @@ const apiRouter = require('./routes/api')
 const processesRouter = require('./routes/processes')
 const listRouter = require('./routes/list')
 const objectRouter = require('./routes/object')
+const fieldRouter = require('./routes/field')
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api', apiRouter)
 app.use('/processes', processesRouter)
 app.use('/list', listRouter)
 app.use('/object', objectRouter)
+app.use('/field', fieldRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

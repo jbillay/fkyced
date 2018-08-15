@@ -46,3 +46,36 @@ CREATE TABLE IF NOT EXISTS fkycedLists (
   updatedAt DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id)
 )
+
+CREATE TABLE IF NOT EXISTS fkycedObjects (
+  id INT NOT NULL AUTO_INCREMENT,
+  label VARCHAR(255) NOT NULL,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  createdAt DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),
+  updatedAt DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id)
+)
+
+CREATE TABLE IF NOT EXISTS fkycedFields (
+  id INT NOT NULL AUTO_INCREMENT,
+  objectId INT NOT NULL,
+  fieldType ENUM('Checkbox', 'Currency', 'Date', 'Date/Time', 'Email', 'Number', 'Percent', 'Phone', 'Picklist', 'Picklist Multiple', 'Text', 'Text Area', 'Text Area Rich', 'Time', 'URL', 'Object', 'Formula'),
+  camundaType ENUM('boolean', 'double', 'date', 'string', 'json'),
+  label VARCHAR(255) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  helper TEXT,
+  required BOOLEAN default 0,
+  defaultValue VARCHAR(255),
+  numLength INT,
+  numDecimal INT,
+  valueUnique BOOLEAN default 0,
+  listId INT,
+  listValues TEXT,
+  displayLine INT,
+  valueSize INT,
+  createdAt DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),
+  updatedAt DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id)
+)

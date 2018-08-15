@@ -1,0 +1,29 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+  <h3>Edit Object {{ object.label }}</h3>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    Issue when we save the object : {{ error }}
+  </div>
+  {% endif %}
+  <form id="objectForm" action="/object/save" method="POST">
+    <input type="hidden" id="objectId" name="objectId" value="{{ object.id }}">
+    <div class="form-group">
+      <label for="objectLabel">Label</label>
+      <input type="text" class="form-control" id="objectLabel" name="objectLabel" aria-describedby="nameHelp" value="{{ object.label }}">
+      <small id="nameHelp" class="form-text text-muted">Define a label for your object.</small>
+    </div>
+    <div class="form-group">
+      <label for="objectName">Name</label>
+      <input type="text" class="form-control" id="objectName" name="objectName" aria-describedby="nameHelp" value="{{ object.name }}">
+      <small id="nameHelp" class="form-text text-muted">Define a name for your object. Name could not include spaces.</small>
+    </div>
+    <div class="form-group">
+      <label for="objectDescription">Description</label>
+      <small id="valuesHelp" class="form-text text-muted">Description of the object.</small>
+      <textarea class="form-control" aria-describedby="nameHelp" id="objectDescription" name="objectDescription" rows="6">{{ object.description }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+{% endblock %}
