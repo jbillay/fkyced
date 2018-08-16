@@ -66,8 +66,15 @@ router.get('/delete/:id', async function(req, res, next) {
     res.redirect('/')
   } else {
     const object = await models.fkycedObjects.findOne({ where: { id : objectId }})
-    await object.destroy()
-    res.redirect('/object')
+    try {
+      await models.fkycedFields.destroy({ where: { objectId : objectId }})
+      await object.destroy()
+      res.redirect('/object')
+    } catch (error) {
+      const userInfo = await camunda.getUserInfo(user.authenticatedUser)
+      const objects = await models.fkycedObjects.findAll()
+      res.render('object', { user: userInfo, objects: objects, error: error })
+    }
   }
 })
 

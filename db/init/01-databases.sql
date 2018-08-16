@@ -60,8 +60,8 @@ CREATE TABLE IF NOT EXISTS fkycedObjects (
 CREATE TABLE IF NOT EXISTS fkycedFields (
   id INT NOT NULL AUTO_INCREMENT,
   objectId INT NOT NULL,
-  fieldType ENUM('Checkbox', 'Currency', 'Date', 'Date/Time', 'Email', 'Number', 'Percent', 'Phone', 'Picklist', 'Picklist Multiple', 'Text', 'Text Area', 'Text Area Rich', 'Time', 'URL', 'Object', 'Formula'),
-  camundaType ENUM('boolean', 'double', 'date', 'string', 'json'),
+  fieldType ENUM('checkbox', 'currency', 'date', 'number', 'object', 'phone', 'picklist', 'picklistMulti', 'text', 'textArea') NOT NULL,
+  camundaType ENUM('boolean', 'integer', 'double', 'date', 'string', 'json'),
   label VARCHAR(255) NOT NULL,
   name VARCHAR(100) NOT NULL,
   description TEXT,
@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS fkycedFields (
   listValues TEXT,
   displayLine INT,
   valueSize INT,
+  linkedObjectId INT,
   createdAt DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),
   updatedAt DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id)

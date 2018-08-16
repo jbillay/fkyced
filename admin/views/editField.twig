@@ -1,41 +1,42 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
-  <h3>New Field</h3>
+  <h3>Edit Field {{ field.label }}</h3>
   {% if error %}
   <div class="alert alert-danger" role="alert">
     Issue when we save the field : {{ error }}
   </div>
   {% endif %}
   <form id="fieldForm" action="/field/save" method="POST">
-    <input type="hidden" id="objectId" name="objectId" value="{{ objectId }}">
+    <input type="hidden" id="fieldId" name="fieldId" value="{{ field.id }}">
+    <input type="hidden" id="objectId" name="objectId" value="{{ field.objectId }}">
     <div class="form-group">
       <label for="fieldLabel">Label</label>
-      <input type="text" class="form-control" id="fieldLabel" name="fieldLabel" aria-describedby="labelHelp" placeholder="Enter field label">
+      <input type="text" class="form-control" id="fieldLabel" name="fieldLabel" aria-describedby="labelHelp" value="{{ field.label }}">
       <small id="labelHelp" class="form-text text-muted">Define a label for your field</small>
     </div>
     <div class="form-group">
       <label for="fieldName">Name</label>
-      <input type="text" class="form-control" id="fieldName" name="fieldName" aria-describedby="nameHelp" placeholder="Enter field name">
+      <input type="text" class="form-control" id="fieldName" name="fieldName" aria-describedby="nameHelp" value="{{ field.name }}">
       <small id="nameHelp" class="form-text text-muted">Define a name for your field. Name could not include space or special character.</small>
     </div>
     <div class="form-group">
       <label for="fieldDescription">Description</label>
       <small id="descHelp" class="form-text text-muted">Description of the field</small>
-      <textarea class="form-control" aria-describedby="descHelp" id="fieldDescription" name="fieldDescription" rows="2"></textarea>
+      <textarea class="form-control" aria-describedby="descHelp" id="fieldDescription" name="fieldDescription" rows="2">{{ field.description }}</textarea>
     </div>
     <div class="form-group">
       <label for="fieldHelper">Helper</label>
       <small id="helperHelp" class="form-text text-muted">Helper for the field</small>
-      <textarea class="form-control" aria-describedby="helperHelp" id="fieldHelper" name="fieldHelper" rows="2"></textarea>
+      <textarea class="form-control" aria-describedby="helperHelp" id="fieldHelper" name="fieldHelper" rows="2">{{ field.helper }}</textarea>
     </div>
     <div class="form-group form-check">
-      <input type="checkbox" class="form-check-input" id="fieldRequired" name="fieldRequired">
+      <input type="checkbox" class="form-check-input" id="fieldRequired" name="fieldRequired" {% if field.required == true %} checked {% endif %}>
       <label class="form-check-label" for="fieldRequired">Field always required</label>
     </div>
     <div class="form-group">
       <label for="fieldDefault">Default</label>
-      <input type="text" class="form-control" id="fieldDefault" name="fieldDefault" aria-describedby="defaultHelp" placeholder="Enter default value">
+      <input type="text" class="form-control" id="fieldDefault" name="fieldDefault" aria-describedby="defaultHelp" value="{{ field.defaultValue }}">
       <small id="defaultHelp" class="form-text text-muted">Default value for the field.</small>
     </div>
 
@@ -44,61 +45,61 @@
         <legend class="col-form-label col-sm-2 pt-0">Type</legend>
         <div class="col-sm-10">
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeCheckbox" value="checkbox">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeCheckbox" value="checkbox" {% if field.fieldType == 'checkbox' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypeCheckbox">
               Checkbox
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeCurrency" value="currency">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeCurrency" value="currency" {% if field.fieldType == 'currency' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypeCurrency">
               Currency
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeDate" value="date">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeDate" value="date" {% if field.fieldType == 'date' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypeDate">
               Date
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeNumber" value="number">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeNumber" value="number" {% if field.fieldType == 'number' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypeNumber">
               Number
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeObject" value="object">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeObject" value="object" {% if field.fieldType == 'object' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypeObject">
               Object
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypePhone" value="phone">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypePhone" value="phone" {% if field.fieldType == 'phone' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypePhone">
               Phone
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypePicklist" value="picklist">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypePicklist" value="picklist" {% if field.fieldType == 'picklist' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypePicklist">
               Picklist
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypePicklistMulti" value="picklistMulti">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypePicklistMulti" value="picklistMulti" {% if field.fieldType == 'picklistMulti' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypePicklistMulti">
               Picklist Multi Select
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeText" value="text">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeText" value="text" {% if field.fieldType == 'text' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypeText">
               Text
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeTextArea" value="textArea">
+            <input class="form-check-input" type="radio" name="fieldType" id="fieldTypeTextArea" value="textArea" {% if field.fieldType == 'textArea' %} checked {% endif %}>
             <label class="form-check-label" for="fieldTypeTextArea">
               Text Area
             </label>
@@ -110,18 +111,18 @@
     <div id="lengthExtraField" class="form-group extraFields d-none">
       <label for="fieldLength" class="col-sm-2 col-form-label">Length</label>
       <div class="col-sm-10">
-        <input type="number" class="form-control" id="fieldLength" name="fieldLength">
+        <input type="number" class="form-control" id="fieldLength" name="fieldLength" value="{{ field.numLength }}">
       </div>
     </div>
     <div id="decimalExtraField" class="form-group extraFields d-none">
       <label for="fieldDecimal" class="col-sm-2 col-form-label">Decimal</label>
       <div class="col-sm-10">
-        <input type="number" class="form-control" id="fieldDecimal" name="fieldDecimal">
+        <input type="number" class="form-control" id="fieldDecimal" name="fieldDecimal" value="{{ field.numDecimal }}">
       </div>
     </div>
     <div id="uniqueExtraField" class="form-group extraFields d-none">
       <div class="form-group form-check">
-        <input type="checkbox" class="form-check-input" id="fieldUnique" name="fieldUnique">
+        <input type="checkbox" class="form-check-input" id="fieldUnique" name="fieldUnique" {% if field.fieldUnique == true %} checked {% endif %}>
         <label class="form-check-label" for="fieldUnique">Field needs to be unique</label>
       </div>
     </div>
@@ -137,7 +138,7 @@
               </label>
             </div>
             <div class="form-check">
-              <input class="form-check-input" type="radio" id="fieldListOrValuesListCheckbox" name="fieldListOrValuesCheckbox" value="values">
+              <input class="form-check-input" type="radio" id="fieldListOrValuesListCheckbox" name="fieldListOrValuesCheckbox" value="values" {% if field.listValues %} checked {% endif %}>
               <label class="form-check-label" for="fieldListOrValuesListCheckbox">
                 Values
               </label>
@@ -148,28 +149,28 @@
         <select class="form-control" id="fieldListId" name="fieldListId">
           <option></option>
           {% for list in lists %}
-            <option value="{{ list.id }}">{{ list.name }}</option>
+            <option value="{{ list.id }}" {% if field.listId == list.id %} selected {% endif %}>{{ list.name }}</option>
           {% endfor %}
         </select>
       </div>
       <div id="fieldListOrValuesValues" class="form-group d-none">
         <label for="fieldValuesList">Values for the list</label>
         <small id="valuesHelp" class="form-text text-muted">Input one value by line</small>
-        <textarea class="form-control" aria-describedby="valuesHelp" id="fieldValuesList" name="fieldValuesList" rows="5"></textarea>
+        <textarea class="form-control" aria-describedby="valuesHelp" id="fieldValuesList" name="fieldValuesList" rows="5">{{ field.listValues }}</textarea>
       </div>
     </div>
     <div id="objectExtraField" class="form-group extraFields d-none">
       <select class="form-control" id="fieldObjectId" name="fieldObjectId">
         <option></option>
         {% for object in objects if object.id != objectId %}
-          <option value="{{ object.id }}">{{ object.label }}</option>
+          <option value="{{ object.id }}" {% if field.objectId == object.id %} selected {% endif %}>{{ object.label }}</option>
         {% endfor %}
       </select>
     </div>
     <div id="displayLineExtraField" class="form-group extraFields d-none">
       <label for="fieldDisplayLine" class="col-sm-2 col-form-label">Displayed Line</label>
       <div class="col-sm-10">
-        <input type="number" class="form-control" id="fieldDisplayLine" name="fieldDisplayLine" value="3">
+        <input type="number" class="form-control" id="fieldDisplayLine" name="fieldDisplayLine" value="{{ field.displayLine }}">
       </div>
     </div>
 
@@ -180,9 +181,36 @@
 
 {% block script %}
   {{ parent() }}
-  <script src="/javascripts/jquery-ui.min.js"></script>
   <script>
     jQuery(function($) {
+      const extraFields = {
+        currency: ['length', 'decimal'],
+        number: ['length', 'decimal'],
+        text: ['unique'],
+        picklist: ['listOrValues'],
+        picklistMulti: ['listOrValues', 'displayLine'],
+        object: ['object']
+      }
+      const selectedField = $('input[type=radio][name=fieldType]:checked').val()
+      $.each(extraFields, function(key, value) {
+        if (key === selectedField) {
+          $.each(value, function (index, value) {
+            const selector = '#' + value + 'ExtraField'
+            $(selector).removeClass('d-none')
+            if (selectedField === 'picklist') {
+              const typePicklist = $('input[type=radio][name=fieldListOrValuesCheckbox]:checked').val()
+              if (typePicklist === 'list') {
+                $('#fieldListOrValuesValues').addClass('d-none')
+                $('#fieldListOrValuesList').removeClass('d-none')
+              } else if (typePicklist === 'values') {
+                $('#fieldListOrValuesList').addClass('d-none')
+                $('#fieldListOrValuesValues').removeClass('d-none')
+              }
+            }
+          })
+        }
+      })
+
       $('input[type=radio][name=fieldType]').change(function() {
         const extraFields = {
           currency: ['length', 'decimal'],

@@ -2,6 +2,11 @@
 
 {% block content %}
   <p>Object Management</p>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    Issue when we save the field : {{ error }}
+  </div>
+  {% endif %}
 
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
     <h2>My Objects</h2>
