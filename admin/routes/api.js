@@ -6,8 +6,12 @@ const _ = require('lodash')
 
 router.get('/currentProcess', async function (req, res, next) {
   const activeProcess = await models.processes.findOne({ where: { active: true } })
-  const currentProcess = await camunda.searchProcess(activeProcess.processKey, activeProcess.processVersion)
-  res.json({ key: currentProcess[0].key, version: currentProcess[0].version })
+  if (activeProcess) {
+    const currentProcess = await camunda.searchProcess(activeProcess.processKey, activeProcess.processVersion)
+    res.json({ status: 'success', key: currentProcess[0].key, version: currentProcess[0].version })
+  } else {
+    res.json({ status: 'error', error: 'No process found !' })
+  }
 })
 
 router.get('/form', async function (req, res, next) {

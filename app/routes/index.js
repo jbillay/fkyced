@@ -33,14 +33,18 @@ router.get('/home', async function(req, res, next) {
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
     const currentProcess = await fkycedAdmin.getCurrentProcess()
-    const processDefinition = await camunda.searchProcess(currentProcess.key, currentProcess.version)
-    if (processDefinition && processDefinition.id) {
-      const processInstancesActivity = await camunda.getInstanceHistory(processDefinition.id)
-      _.map(processInstancesActivity, function (process)
-            { return process.durationInMillis = parseInt(process.durationInMillis) / 60000 })
-      res.render('index', { user: userInfo, processes: processInstancesActivity, currentProcess: currentProcess, title: 'Home Page' })
-    } else {
-      res.render('error', { user: userInfo, message: 'Process not found', title: 'Home Page' })
+    if (currentProcess.status === 'error') {
+      res.render('error', { user: userInfo, message: currentProcess.error, title: 'Home Page' })
+    } else if (currentProcess.status === 'success') {
+      const processDefinition = await camunda.searchProcess(currentProcess.key, currentProcess.version)
+      if (processDefinition && processDefinition.id) {
+        const processInstancesActivity = await camunda.getInstanceHistory(processDefinition.id)
+        _.map(processInstancesActivity, function (process)
+              { return process.durationInMillis = parseInt(process.durationInMillis) / 60000 })
+        res.render('index', { user: userInfo, processes: processInstancesActivity, currentProcess: currentProcess, title: 'Home Page' })
+      } else {
+        res.render('error', { user: userInfo, message: 'Process not found', title: 'Home Page' })
+      }
     }
   }
 })
