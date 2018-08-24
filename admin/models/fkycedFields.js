@@ -1,7 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
     const fkycedFields = sequelize.define('fkycedFields', {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-      objectId: { type: DataTypes.INTEGER, allowNull: false },
       fieldType : { type: DataTypes.ENUM('checkbox', 'currency', 'date', 'number', 'object', 'phone', 'picklist', 'picklistMulti', 'text', 'textArea'), allowNull: false },
       camundaType: { type: DataTypes.ENUM('boolean', 'integer', 'double', 'date', 'string', 'json'), allowNull: false },
       label: { type: DataTypes.STRING, allowNull: false },
@@ -18,6 +17,11 @@ module.exports = function(sequelize, DataTypes) {
       displayLine: { type: DataTypes.INTEGER, allowNull: true },
       linkedObjectId: { type: DataTypes.INTEGER, allowNull: true },
       valueSize: { type: DataTypes.INTEGER, allowNull: true }
-    });
-    return fkycedFields;
+    })
+    fkycedFields.associate = function (models) {
+      /*jshint -W030 */
+      fkycedFields.belongsTo(models.fkycedObjects, { as: 'object' })
+      /*jshint +W030 */
+    }
+    return fkycedFields
 };

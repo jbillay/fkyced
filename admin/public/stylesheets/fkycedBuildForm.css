@@ -1,0 +1,77 @@
+
+/* fkycedBuildForm Style */
+
+div#fkycedFormBuilderCenterPanel {
+  height: 35rem;
+  border: 1px solid black;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+
+div#fkycedFormBuilderLeftPanel {
+  height: 35rem;
+  border: 1px solid black;
+}
+
+#fkycedSelectableItems {
+  height: 25rem;
+  overflow: scroll;
+  overflow-x: hidden;
+  border: 1px solid black;
+  padding: 5px;
+  margin-top: 5px;
+  list-style-type: none;
+}
+
+#fkycedSelectableItems .ui-selecting { background: #FECA40; }
+#fkycedSelectableItems .ui-selected { background: #F39814; color: white; }
+#fkycedSelectableItems li { margin: 3px 0px; padding: 0.2rem; font-size: 1rem; }
+
+div.sectionHeader {
+  text-align: center;
+}
+
+div.sectionHeader  span{
+  font-size: 1.5rem;
+  padding: 0.2rem 0.3rem;
+  bottom: 0.2rem;
+}
+
+div.SectionNotDisplayed {
+  display: none;
+}
+
+div.configPanel {
+  position: relative;
+  border: 1px solid black;
+  margin: 0.5rem;
+  padding: 0.5rem;
+}
+
+div.itemIcons {
+  position: inherit;
+  top: -0.5rem;
+  z-index: 100;
+}
+
+div.optionPanel {
+  border: 1px solid black;
+  padding: 0.5rem;
+}
+
+.form-group.required .control-label:after {
+  content:" *";
+  color:red;
+}
+
+a.previousSection {
+  position: absolute;
+  top: 4px;
+  left: 20px;
+}
+
+a.nextSection {
+  position: absolute;
+  top: 4px;
+  right: 20px;
+}

@@ -5,15 +5,13 @@ const config      = require('../config')
 const sequelize   = new Sequelize(config.fkycedDB)
 const db          = {};
 
-sequelize
-  .authenticate()
+sequelize.authenticate()
   .then(function(err) {
     if (!!err) {
       console.error('Unable to connect to the database: Exiting.' + err)
       process.exit(0)
     } else {
       console.log('Connection has been established successfully.')
-
       fs
         .readdirSync(__dirname)
         .filter(function(file) {
@@ -24,7 +22,6 @@ sequelize
       	  console.log(model.name + ' model loaded');
           db[model.name] = model
         })
-
       Object.keys(db).forEach(function(modelName) {
         if ('associate' in db[modelName]) {
       	   console.log(modelName + ' model association done')

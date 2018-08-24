@@ -65,7 +65,8 @@ router.get('/new', async function(req, res, next) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
-    res.render('newForm', { user: userInfo })
+    const objects = await models.fkycedObjects.findAll({ include: [{ all: true }]})
+    res.render('newForm', { user: userInfo, fields: JSON.stringify(objects) })
   }
 })
 

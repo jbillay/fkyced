@@ -130,7 +130,6 @@ router.post('/save', async function(req, res, next) {
       }
     })
     if (fieldId) {
-      console.log(numLength)
       let field = await models.fkycedFields.findOne({ where: { id: fieldId } })
       field.changed('updatedAt', true)
       field.changed('numLength', true)
@@ -156,7 +155,9 @@ router.post('/save', async function(req, res, next) {
       field.displayLine = displayLine
       field.linkedObjectId = linkedObjectId
       try {
+        const object  = await models.fkycedObjects.findOne({where: {id: objectId}})
         const updatedField = await field.save()
+        await updatedField.setObject(object)
         res.redirect('/object/fields/' + objectId)
       } catch (error) {
         const userInfo = await camunda.getUserInfo(user.authenticatedUser)
@@ -166,6 +167,7 @@ router.post('/save', async function(req, res, next) {
       }
     } else {
       try {
+        const object  = await models.fkycedObjects.findOne({where: {id: objectId}})
         const newField = await models.fkycedFields.create(
           { objectId: objectId, fieldType : fieldType, camundaType: camundaType,
             label: fieldLabel, name: name, description: desc, helper: helper,
@@ -174,6 +176,8 @@ router.post('/save', async function(req, res, next) {
             listValues: listValues, displayLine: displayLine,
             linkedObjectId: linkedObjectId, valueSize: null
           })
+        await newField.setObject(object)
+        await object.addFields(newField)
         res.redirect('/object/fields/' + objectId)
       } catch (error) {
         const userInfo = await camunda.getUserInfo(user.authenticatedUser)

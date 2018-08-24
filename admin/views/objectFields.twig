@@ -1,7 +1,7 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
-  <p>Fields of Object : <a href="/object/fields/{{ object.id }}">{{ object.label }}</a></p>
+  <p>Fields of Object : <a href="/object">{{ object.label }}</a></p>
   {% if error %}
   <div class="alert alert-danger" role="alert">
     Issue when we save the field : {{ error }}
