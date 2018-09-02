@@ -171,8 +171,9 @@ const buildTaskVariables = (workflowData, taskData) => {
 const completeTask = async (taskId, variables) => {
   // POST /task/anId/complete
   try {
-    const response = await request.post(config.engineApi + '/task/' + taskId + '/complete', variables);
+    const response = await request.post(config.engineApi + '/task/' + taskId + '/complete', variables)
   } catch(error) {
+    // Promise.reject(error)
     console.error(error);
   }
 }

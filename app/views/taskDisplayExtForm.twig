@@ -1,33 +1,30 @@
 {% extends "layout.twig" %}
 
+{% block head %}
+  {{ parent() }}
+  <link rel='stylesheet' href='/stylesheets/fkycedBuildForm.css' />
+{% endblock %}
+
 {% block content %}
 <h1>{{task.name}}</h1>
 
-<form id="formDisplay" action="/completeTask" method="POST">
-</form>
+<div id="formDisplay">
+</div>
 
 {% endblock %}
 
 {% block script %}
   {{ parent() }}
   <script src="/javascripts/jquery-ui.min.js"></script>
-  <script src="/javascripts/form-render.min.js"></script>
+  <script src="/javascripts/himalaya.js"></script>
+  <script src="/javascripts/fkycedBuildForm.js"></script>
 
   <script>
     jQuery(function($) {
-      const container = document.getElementById('formDisplay')
-      const formData = JSON.parse({{ form.formStructure }})
-      const formRenderOpts = {
-        container,
-        formData
-      };
-      $(container).formRender(formRenderOpts)
-      $('<input>').attr({
-        type: 'hidden',
-        id: 'refId',
-        name: 'refId',
-        value: '{{ task.id }}'
-      }).appendTo(container)
+      const container = $('div#formDisplay')
+      const formData = {{ form.formStructure }}
+      const formDisplay = new fkycedDisplayForm(container, formData, {action: '/completeTask', method: 'POST', task: '{{ task.id }}'})
+      formDisplay.display()
     });
   </script>
 {% endblock %}

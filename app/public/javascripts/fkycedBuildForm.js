@@ -501,12 +501,15 @@ class fkycedDisplayForm {
     this.element = element
     this.form = form
     this.options = Object.assign({id: 'formDisplay', action: '', method: 'POST' , class: ''}, options)
+    this.refId = this.options.task
   }
 
   display () {
     const htmlForm = window.himalaya.stringify(JSON.parse(this.form))
-    console.log(htmlForm)
-    const html = `<form id="${this.options.id}" action="${this.options.action}" method="${this.options.method}" class="${this.options.class}">${htmlForm}</form>`
+    const html = `<form id="${this.options.id}" action="${this.options.action}" method="${this.options.method}" class="${this.options.class}">
+                    <input type="hidden" id="refId" name="refId" value="${this.refId}">
+                    ${htmlForm}
+                    </form>`
     this.element.append(html)
   }
 }

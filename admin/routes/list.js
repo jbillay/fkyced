@@ -166,4 +166,16 @@ router.post('/value/new/:listId', async function(req, res, next) {
   }
 })
 
+router.get('/:id', async function(req, res, next) {
+  const user = req.cookies.currentAdminUser
+  const id = req.params.id
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    const userInfo = await camunda.getUserInfo(user.authenticatedUser)
+    const list = await models.fkycedLists.findOne({where: {id: id}})
+    res.json(list)
+  }
+})
+
 module.exports = router

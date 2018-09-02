@@ -35,6 +35,7 @@
 {% block script %}
   {{ parent() }}
   <script src="/javascripts/jquery-ui.min.js"></script>
+  <script src="/javascripts/himalaya.js"></script>
   <script src="/javascripts/fkycedBuildForm.js"></script>
 
   <script>
@@ -43,18 +44,16 @@
         objects: {{ fields }}
       }
       const formBuilder = new fkycedBuildForm($('#formEditor'), {}, datas)
-      // const options = { showActionButtons: false }
-      // const formBuilder = $(document.getElementById('formEditor')).formBuilder(options)
-      // $('#formForm').submit(function (event) {
-      //   event.preventDefault()
-      //   $('<input>').attr({
-      //     type: 'hidden',
-      //     id: 'data',
-      //     name: 'data',
-      //     value: formBuilder.actions.getData('json', true)
-      //   }).appendTo('#formForm')
-      //   this.submit()
-      // })
+      $('#formForm').submit(function (event) {
+        event.preventDefault()
+        $('<input>').attr({
+          type: 'hidden',
+          id: 'data',
+          name: 'data',
+          value: formBuilder.getJson()
+        }).appendTo('#formForm')
+        this.submit()
+      })
     })
   </script>
 {% endblock %}

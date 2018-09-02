@@ -155,8 +155,20 @@ router.post('/completeTask/', async function(req, res, next) {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
     const taskId = req.body.refId
     const task = await camunda.getTask(taskId)
-    const formFields = await camunda.getFormVariable(taskId)
-    const workflowData = camunda.buildTaskVariables(formFields, req.body)
+    const xml = await camunda.getProcessXML(task.processDefinitionId)
+    const builtForm = await formBuilder.createByTaskId(xml, task.taskDefinitionKey, taskId)
+    let workflowData = {}
+    if (builtForm.type === 'internal') {
+      const formFields = await camunda.getFormVariable(taskId)
+      workflowData = camunda.buildTaskVariables(formFields, req.body)
+    } else if (builtForm.type === 'external') {
+      // TODO: need to check camunda type in the fields table
+      workflowData = req.body
+      Object.keys(workflowData).map(function(key, index) {
+        workflowData[key] = {value: workflowData[key]}
+      })
+      delete workflowData.refId
+    }
     const variables = { variables : workflowData }
     await camunda.completeTask(taskId, variables)
     res.redirect('/taskList/' + task.processInstanceId)
