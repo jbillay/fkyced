@@ -146,6 +146,17 @@ const getTask = async taskId => {
   }
 }
 
+const getProcessVariables = async processId => {
+  try {
+    const response = await request.get(config.engineApi + '/variable-instance?processInstanceIdIn=' + processId);
+    const variables = response.data;
+    return variables
+  } catch(error) {
+    console.error(error)
+    Promise.reject(error)
+  }
+}
+
 const buildTaskVariables = (workflowData, taskData) => {
   _.map(workflowData, function(values, key) {
     if (taskData[key]) {
@@ -219,6 +230,7 @@ module.exports = {  searchProcess,
                     buildTaskVariables,
                     getOpenTasks,
                     getFormVariable,
+                    getProcessVariables,
                     getTask,
                     getRenderedForm,
                     completeTask,

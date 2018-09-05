@@ -142,7 +142,8 @@ router.get('/displayTask/:taskId', async function(req, res, next) {
       res.render('taskDisplayIntForm', { user:userInfo, form: builtForm.form, title: task.name })
     } else if (builtForm.type === 'external') {
       const form = await fkycedAdmin.getForm(builtForm.form)
-      res.render('taskDisplayExtForm', { user:userInfo, form: form, task: task, title: task.name })
+      const datas = await camunda.getProcessVariables(task.processInstanceId)
+      res.render('taskDisplayExtForm', { user: userInfo, form: form, task: task, title: task.name, currentVariables: datas })
     }
   }
 })

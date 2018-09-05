@@ -7,7 +7,6 @@ const logger = require('morgan');
 const session = require('express-session')
 
 const indexRouter = require('./routes/index')
-const usersRouter = require('./routes/users')
 
 const app = express();
 
@@ -28,8 +27,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/', indexRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

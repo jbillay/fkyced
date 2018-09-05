@@ -55,7 +55,8 @@ router.get('/edit/:id', async function(req, res, next) {
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
     const form = await models.fkycedForms.findOne({ where: { id : formId }})
-    res.render('editForm', { user: userInfo, form: form })
+    const objects = await models.fkycedObjects.findAll({ include: [{ all: true }]})
+    res.render('editForm', { user: userInfo, form: form, fields: JSON.stringify(objects) })
   }
 })
 
@@ -84,7 +85,8 @@ router.post('/save', async function(req, res, next) {
         { formName: formName, formId: formId, formStructure: formStructure })
       res.redirect('/form')
     } catch (error) {
-      res.render('newForm', { user: userInfo, error: error })
+      const objects = await models.fkycedObjects.findAll({ include: [{ all: true }]})
+      res.render('newForm', { user: userInfo, fields: JSON.stringify(objects), error: error })
     }
   }
 })

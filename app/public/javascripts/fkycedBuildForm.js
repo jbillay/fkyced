@@ -58,12 +58,14 @@ class fkycedBuildForm {
                     attributes['name'] = value.name
                     attributes['label'] = value.label
                     attributes['alwaysRequired'] = value.required
+                    attributes['listId'] = value.listId
                     itemType = value.fieldType
                   }
                 }
               }
               if (itemType) {
                 const functionName = 'add' + itemType.replace(/^\w/, c => c.toUpperCase())
+                console.log(functionName)
                 const { newElement, panelId } = $(BuildItemBuilder[functionName](attributes))[0]
                 $('div#fkycedFormBuilderCenterPanel').append(newElement)
                 if (attributes.alwaysRequired) {
@@ -72,6 +74,7 @@ class fkycedBuildForm {
                 const closeIconSelector = `div#${panelId} i.fa-window-close`
                 const editIconSelector = `div#${panelId} i.fa-edit`
                 const requiredCheckboxSelector = `#required_${panelId}`
+                const readonlyCheckboxSelector = `#readonly_${panelId}`
                 const optionPanelSelector = `div#option_${panelId}`
                 $(optionPanelSelector).hide()
                 $(closeIconSelector).click(function (event) {
@@ -80,6 +83,8 @@ class fkycedBuildForm {
                   BuildItemBuilder.toggleOptions($(this).parent().parent().attr('id'))  })
                 $(requiredCheckboxSelector).click(function (event) {
                   BuildItemBuilder.toggleRequired($(this).parent().parent().parent().attr('id')) })
+                $(readonlyCheckboxSelector).click(function (event) {
+                  BuildItemBuilder.toggleReadonly($(this).parent().parent().parent().attr('id'))  })
               }
             }
           }
@@ -229,10 +234,22 @@ class BuildItem {
   static addPicklist (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <select class="form-control" id="${attributes.name}" name="${attributes.name}">
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
+    <select class="form-control" id="${attributes.name}" name="${attributes.name}" listId="${attributes.listId}">
+    <option value="1">One</option>
+    <option value="2">Two</option>
+    <option value="3">Three</option>
+    </select>
+    </div>`
+    return item
+  }
+
+  static addPicklistMulti (attributes) {
+    const item = `<div class="form-group form-item">
+    <label class="control-label" for="${attributes.name}">${attributes.label}</label>
+    <select class="form-control" multiple id="${attributes.name}" name="${attributes.name}" listId="${attributes.listId}">
+    <option value="1">One</option>
+    <option value="2">Two</option>
+    <option value="3">Three</option>
     </select>
     </div>`
     return item
@@ -397,8 +414,25 @@ class BuildItemBuilder extends BuildItem {
     }
   }
 
+  static toggleReadonly (id) {
+    const panelSelector = `div#${id}`
+    const labelItem = $(panelSelector).children('.form-group')
+    const inputItem = labelItem.children('input')
+    const selectItem = labelItem.children('select')
+    if (inputItem.prop('disabled') || selectItem.prop('disabled')) {
+      inputItem.prop('disabled', false)
+      selectItem.prop('disabled', false)
+    } else {
+      inputItem.prop('disabled', true)
+      selectItem.prop('disabled', true)
+    }
+  }
+
   static addFieldConfigPanel (element, alwaysRequired) {
     const panelId = 'panel_' + Math.random().toString(36).substr(2, 17)
+    const readOnlyCheckedbox = `<div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="readonly_${panelId}">
+      <label class="form-check-label" for="readonly_${panelId}">Read Only</label></div>`
     let newElement = `<div class="configPanel" id="${panelId}">
     <div class="itemIcons float-right"><i class="far fa-edit"></i><i class="far fa-window-close"></i></div>
     ${element}
@@ -410,7 +444,9 @@ class BuildItemBuilder extends BuildItem {
     } else {
       newElement += `<input type="checkbox" class="form-check-input" id="required_${panelId}">`
     }
-    newElement += `<label class="form-check-label" for="required_${panelId}">Required</label></div></div></div>`
+    newElement += `<label class="form-check-label" for="required_${panelId}">Required</label></div>`
+    newElement += readOnlyCheckedbox
+    newElement += `</div></div>`
     return { newElement: newElement, panelId: panelId }
   }
 
@@ -466,6 +502,10 @@ class BuildItemBuilder extends BuildItem {
     let newItem = super.addCompleteButton(attributes)
     return this.addButtonConfigPanel(newItem)
   }
+  static addPicklistMulti (attributes) {
+    let newItem = super.addPicklistMulti(attributes)
+    return this.addFieldConfigPanel(newItem, attributes.alwaysRequired)
+  }
   static addPicklist (attributes) {
     let newItem = super.addPicklist(attributes)
     return this.addFieldConfigPanel(newItem, attributes.alwaysRequired)
@@ -497,19 +537,77 @@ class BuildItemBuilder extends BuildItem {
 }
 
 class fkycedDisplayForm {
-  constructor(element, form, options) {
+  constructor(element, form, options, datas) {
     this.element = element
     this.form = form
     this.options = Object.assign({id: 'formDisplay', action: '', method: 'POST' , class: ''}, options)
+    this.datas = datas
     this.refId = this.options.task
   }
 
+  checkForListOptions (object) {
+    const me = this
+    let listId = null
+    for (const [objectKey, objectInfo] of Object.entries(object)) {
+      if (objectKey === 'tagName' && objectInfo === 'select') {
+        object.attributes.forEach(function (attribute) {
+          if (attribute.key === 'listid') {
+            listId = attribute.value
+          }
+        })
+        $.ajax({
+          url: 'http://localhost:9615/api/list/values/' + listId,
+          async: false,
+        })
+          .done(function (response) {
+            const values = response.values
+            let childrens = []
+            for (const [key, value] of Object.entries(values)) {
+              childrens.push({
+                    'type': 'element', 'tagName': 'option',
+                    'attributes': [ { 'key': 'value', 'value': key} ],
+                    'children': [ { 'type': 'text', 'content': value} ] })
+            }
+            object.children = childrens
+          })
+          .fail(function (error) {
+            console.error(error)
+          })
+      } else {
+        if (objectInfo.children) {
+          objectInfo.children.forEach(function (item) {
+            me.checkForListOptions(item)
+          })
+        }
+      }
+    }
+  }
+
   display () {
-    const htmlForm = window.himalaya.stringify(JSON.parse(this.form))
-    const html = `<form id="${this.options.id}" action="${this.options.action}" method="${this.options.method}" class="${this.options.class}">
+    // Transform form data to object
+    let formObject = JSON.parse(this.form)
+    // Parse form object to replace list values
+    this.checkForListOptions(formObject)
+    // Transform form object into HTML
+    const htmlForm = window.himalaya.stringify(formObject)
+    // Wrap up HTML form with form tags and include Task ID
+    const html = `<form id="${this.options.id}" action="${this.options.action}"
+                    method="${this.options.method}" class="${this.options.class}">
                     <input type="hidden" id="refId" name="refId" value="${this.refId}">
-                    ${htmlForm}
-                    </form>`
+                    ${htmlForm}</form>`
+    // Map the html form to the screen
     this.element.append(html)
+    // insert existing value
+    if (this.datas) {
+      for (const [dataKey, dataValue] of Object.entries(this.datas)) {
+        if ($('#' + dataValue.name).is("input") && $('#' + dataValue.name).attr('type') === 'text') {
+          $('#' + dataValue.name).val(dataValue.value)
+        } else if ($('#' + dataValue.name).is("select")) {
+          $('#' + dataValue.name).val(dataValue.value)
+        } else {
+          $('#' + dataValue.name).val(dataValue.value)
+        }
+      }
+    }
   }
 }

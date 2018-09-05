@@ -43,7 +43,7 @@
       const datas = {
         objects: {{ fields }}
       }
-      const formBuilder = new fkycedBuildForm($('#formEditor'), {}, datas)
+      const formBuilder = new fkycedBuildForm($('#formEditor'), {}, datas, null)
       $('#formForm').submit(function (event) {
         event.preventDefault()
         $('<input>').attr({

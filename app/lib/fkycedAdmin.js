@@ -28,4 +28,19 @@ const getForm = async (id) => {
   }
 }
 
+const getListValues = async (id) => {
+  try {
+    const response = await request.get(config.adminApi + '/api/list/values/' + id)
+    if (response.data.status === 'success') {
+      const values = response.data.values
+      return values
+    } else {
+      Promise
+      console.error(response.data.error)
+    }
+  } catch(error) {
+    console.error(error)
+  }
+}
+
 module.exports = { getCurrentProcess, getForm }

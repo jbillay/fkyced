@@ -23,7 +23,8 @@
     jQuery(function($) {
       const container = $('div#formDisplay')
       const formData = {{ form.formStructure }}
-      const formDisplay = new fkycedDisplayForm(container, formData, {action: '/completeTask', method: 'POST', task: '{{ task.id }}'})
+      const datas = {{ currentVariables | json_encode }}
+      const formDisplay = new fkycedDisplayForm(container, formData, { action: '/completeTask', method: 'POST', task: '{{ task.id }}' }, datas)
       formDisplay.display()
     });
   </script>
