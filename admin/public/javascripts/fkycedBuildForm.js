@@ -32,7 +32,6 @@ class fkycedBuildForm {
           $('div#fkycedFormBuilderCenterPanel').append(newElement)
           const closeIconSelector = `div#${panelId} i.fa-window-close`
           const editIconSelector = `div#${panelId} i.fa-edit`
-          const requiredCheckboxSelector = `#required_${panelId}`
           const optionPanelSelector = `div#option_${panelId}`
           const buttonNameSelector = `input#buttonName${panelId}`
           const selectTypeSelector = `select#buttonType${panelId}`
@@ -43,8 +42,6 @@ class fkycedBuildForm {
             BuildItemBuilder.removePanel($(this).parent().parent().attr('id'))  })
           $(editIconSelector).click(function (event) {
             BuildItemBuilder.toggleOptions($(this).parent().parent().attr('id'))  })
-          $(requiredCheckboxSelector).click(function (event) {
-            BuildItemBuilder.toggleRequired($(this).parent().parent().parent().attr('id'))  })
           $(buttonNameSelector).change(function (event) {
             BuildItemBuilder.updateButtonName(panelId, $(this).val()) })
           $(selectTypeSelector).change(function (event) {
@@ -100,8 +97,55 @@ class fkycedBuildForm {
     const formObject = JSON.parse(form)
     for (const [objectKey, objectInfo] of Object.entries(formObject)) {
       for (const [childrenKey, childrenInfo] of Object.entries(objectInfo.children)) {
-        if (childrenInfo.attributes) {
-          for (const [attributesKey, attributesInfo] of Object.entries(childrenInfo.attributes)) {
+        if (childrenInfo.tagName === 'button') {
+          let attributes = {}
+          if (childrenInfo.attributes) {
+            for (const [attributesKey, attributesInfo] of Object.entries(childrenInfo.attributes)) {
+              if (attributesInfo.key === 'type') {
+                attributes.type = attributesInfo.value
+              } else if (attributesInfo.key === 'class') {
+                const classList = attributesInfo.value.split(' ')
+                classList.forEach(function (className) {
+                  const pattern = new RegExp('^btn-')
+                  if (className.match(pattern)) {
+                    attributes.class = className
+                  }
+                })
+              }
+            }
+          }
+          if (childrenInfo.children) {
+            for (const [subchildrenKey, subchildrenInfo] of Object.entries(childrenInfo.children)) {
+              if (subchildrenInfo.type === 'text') {
+                attributes.text = subchildrenInfo.content
+              }
+            }
+          }
+          const { newElement, panelId } = $(BuildItemBuilder.addCompleteButton(attributes))[0]
+          $('div#fkycedFormBuilderCenterPanel').append(newElement)
+          const closeIconSelector = `div#${panelId} i.fa-window-close`
+          const editIconSelector = `div#${panelId} i.fa-edit`
+          const optionPanelSelector = `div#option_${panelId}`
+          const buttonNameSelector = `input#buttonName${panelId}`
+          const selectTypeSelector = `select#buttonType${panelId}`
+          const selectColorSelector = `select#buttonColor${panelId}`
+          const selectShapeSelector = `select#buttonShape${panelId}`
+          $(optionPanelSelector).hide()
+          $(closeIconSelector).click(function (event) {
+            BuildItemBuilder.removePanel($(this).parent().parent().attr('id'))  })
+          $(editIconSelector).click(function (event) {
+            BuildItemBuilder.toggleOptions($(this).parent().parent().attr('id'))  })
+          $(buttonNameSelector).change(function (event) {
+            BuildItemBuilder.updateButtonName(panelId, $(this).val()) })
+          $(selectTypeSelector).change(function (event) {
+            BuildItemBuilder.updateButtonType(panelId, $(this).val()) })
+          $(selectColorSelector).change(function (event) {
+            BuildItemBuilder.updateButtonColor(panelId, $(this).val()) })
+          $(selectShapeSelector).change(function (event) {
+            BuildItemBuilder.updateButtonShape(panelId, $(this).val()) })
+        } else {
+          if (childrenInfo.attributes) {
+            for (const [attributesKey, attributesInfo] of Object.entries(childrenInfo.attributes)) {
               if (attributesInfo.key === 'id') {
                 const itemId = parseInt(attributesInfo.value)
                 let attributes = {}
@@ -143,6 +187,7 @@ class fkycedBuildForm {
                   }
                 }
               }
+            }
           }
         }
       }
@@ -361,8 +406,11 @@ class BuildItem {
   }
 
   static addCompleteButton (attributes) {
+    const buttonType = attributes.type || 'submit'
+    const buttonClass = attributes.class || 'btn-primary'
+    const buttonText = attributes.text || 'Complete'
     const item = `<div class="form-group form-item">
-    <button type="submit" class="btn btn-primary form-item">Complete</button>
+    <button type="${buttonType}" class="btn ${buttonClass} form-item">${buttonText}</button>
     </div>`
     return item
   }
@@ -507,8 +555,9 @@ class BuildItemBuilder extends BuildItem {
     return { newElement: newElement, panelId: panelId }
   }
 
-  static addButtonConfigPanel (element) {
+  static addButtonConfigPanel (element, attributes) {
     const panelId = 'panel_' + Math.random().toString(36).substr(2, 17)
+    const buttonText = attributes.text || 'complete'
     const selectColor = `<div class="form-group ">
     <label class="control-label" for="buttonColor${panelId}">Button Type</label>
     <select class="form-control" id="buttonColor${panelId}" name="buttonColor${panelId}">
@@ -540,7 +589,7 @@ class BuildItemBuilder extends BuildItem {
     </div>`
     const buttonValue = `<div class="form-group">
     <label class="control-label" for="buttonName${panelId}">Button Name</label>
-    <input type="text" class="form-control" id="buttonName${panelId}" name="buttonName${panelId}" value="Complete">
+    <input type="text" class="form-control" id="buttonName${panelId}" name="buttonName${panelId}" value="${buttonText}">
     </div>`
     let newElement = `<div class="configPanel" id="${panelId}">
     <div class="itemIcons float-right"><i class="far fa-edit"></i><i class="far fa-window-close"></i></div>
@@ -557,7 +606,7 @@ class BuildItemBuilder extends BuildItem {
 
   static addCompleteButton (attributes) {
     let newItem = super.addCompleteButton(attributes)
-    return this.addButtonConfigPanel(newItem)
+    return this.addButtonConfigPanel(newItem, attributes)
   }
   static addPicklistMulti (attributes) {
     let newItem = super.addPicklistMulti(attributes)
