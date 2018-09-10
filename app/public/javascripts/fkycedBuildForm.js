@@ -3,11 +3,15 @@
 TODO: Display library
 */
 class fkycedBuildForm {
-  constructor(element, options, datas) {
+  constructor(element, options, datas, form) {
     this.element = element
     this.options = Object.assign({panels: { center: 9, left: 3 } }, options)
     this.datas = datas
+    this.form = form
     this.createDisplay(this.element, this.options, this.datas)
+    if (form) {
+      this.loadExistingForm(this.form, this.datas)
+    }
   }
 
   createDisplay (element, options, datas) {
@@ -28,7 +32,6 @@ class fkycedBuildForm {
           $('div#fkycedFormBuilderCenterPanel').append(newElement)
           const closeIconSelector = `div#${panelId} i.fa-window-close`
           const editIconSelector = `div#${panelId} i.fa-edit`
-          const requiredCheckboxSelector = `#required_${panelId}`
           const optionPanelSelector = `div#option_${panelId}`
           const buttonNameSelector = `input#buttonName${panelId}`
           const selectTypeSelector = `select#buttonType${panelId}`
@@ -39,8 +42,6 @@ class fkycedBuildForm {
             BuildItemBuilder.removePanel($(this).parent().parent().attr('id'))  })
           $(editIconSelector).click(function (event) {
             BuildItemBuilder.toggleOptions($(this).parent().parent().attr('id'))  })
-          $(requiredCheckboxSelector).click(function (event) {
-            BuildItemBuilder.toggleRequired($(this).parent().parent().parent().attr('id'))  })
           $(buttonNameSelector).change(function (event) {
             BuildItemBuilder.updateButtonName(panelId, $(this).val()) })
           $(selectTypeSelector).change(function (event) {
@@ -65,7 +66,6 @@ class fkycedBuildForm {
               }
               if (itemType) {
                 const functionName = 'add' + itemType.replace(/^\w/, c => c.toUpperCase())
-                console.log(functionName)
                 const { newElement, panelId } = $(BuildItemBuilder[functionName](attributes))[0]
                 $('div#fkycedFormBuilderCenterPanel').append(newElement)
                 if (attributes.alwaysRequired) {
@@ -91,6 +91,108 @@ class fkycedBuildForm {
         }
       })
     this.createItemsSection($('div#fkycedFormBuilderLeftPanel'), datas)
+  }
+
+  loadExistingForm (form, datas) {
+    const formObject = JSON.parse(form)
+    for (const [objectKey, objectInfo] of Object.entries(formObject)) {
+      for (const [childrenKey, childrenInfo] of Object.entries(objectInfo.children)) {
+        if (childrenInfo.tagName === 'button') {
+          let attributes = {}
+          if (childrenInfo.attributes) {
+            for (const [attributesKey, attributesInfo] of Object.entries(childrenInfo.attributes)) {
+              if (attributesInfo.key === 'type') {
+                attributes.type = attributesInfo.value
+              } else if (attributesInfo.key === 'class') {
+                const classList = attributesInfo.value.split(' ')
+                classList.forEach(function (className) {
+                  const pattern = new RegExp('^btn-')
+                  if (className.match(pattern)) {
+                    attributes.class = className
+                  }
+                })
+              }
+            }
+          }
+          if (childrenInfo.children) {
+            for (const [subchildrenKey, subchildrenInfo] of Object.entries(childrenInfo.children)) {
+              if (subchildrenInfo.type === 'text') {
+                attributes.text = subchildrenInfo.content
+              }
+            }
+          }
+          const { newElement, panelId } = $(BuildItemBuilder.addCompleteButton(attributes))[0]
+          $('div#fkycedFormBuilderCenterPanel').append(newElement)
+          const closeIconSelector = `div#${panelId} i.fa-window-close`
+          const editIconSelector = `div#${panelId} i.fa-edit`
+          const optionPanelSelector = `div#option_${panelId}`
+          const buttonNameSelector = `input#buttonName${panelId}`
+          const selectTypeSelector = `select#buttonType${panelId}`
+          const selectColorSelector = `select#buttonColor${panelId}`
+          const selectShapeSelector = `select#buttonShape${panelId}`
+          $(optionPanelSelector).hide()
+          $(closeIconSelector).click(function (event) {
+            BuildItemBuilder.removePanel($(this).parent().parent().attr('id'))  })
+          $(editIconSelector).click(function (event) {
+            BuildItemBuilder.toggleOptions($(this).parent().parent().attr('id'))  })
+          $(buttonNameSelector).change(function (event) {
+            BuildItemBuilder.updateButtonName(panelId, $(this).val()) })
+          $(selectTypeSelector).change(function (event) {
+            BuildItemBuilder.updateButtonType(panelId, $(this).val()) })
+          $(selectColorSelector).change(function (event) {
+            BuildItemBuilder.updateButtonColor(panelId, $(this).val()) })
+          $(selectShapeSelector).change(function (event) {
+            BuildItemBuilder.updateButtonShape(panelId, $(this).val()) })
+        } else {
+          if (childrenInfo.attributes) {
+            for (const [attributesKey, attributesInfo] of Object.entries(childrenInfo.attributes)) {
+              if (attributesInfo.key === 'id') {
+                const itemId = parseInt(attributesInfo.value)
+                let attributes = {}
+                let itemType = null
+                if (datas.objects) {
+                  for (const [objectKey, objectInfo] of Object.entries(datas.objects)) {
+                    for (const [key, value] of Object.entries(objectInfo.fields)) {
+                      if (parseInt(value.id) === itemId) {
+                        attributes['id'] = value.id
+                        attributes['name'] = value.name
+                        attributes['label'] = value.label
+                        attributes['alwaysRequired'] = value.required
+                        attributes['listId'] = value.listId
+                        itemType = value.fieldType
+                      }
+                    }
+                  }
+                  if (itemType) {
+                    const functionName = 'add' + itemType.replace(/^\w/, c => c.toUpperCase())
+                    const { newElement, panelId } = $(BuildItemBuilder[functionName](attributes))[0]
+                    $('div#fkycedFormBuilderCenterPanel').append(newElement)
+                    if (attributes.alwaysRequired) {
+                      BuildItemBuilder.toggleRequired(panelId)
+                    }
+                    const closeIconSelector = `div#${panelId} i.fa-window-close`
+                    const editIconSelector = `div#${panelId} i.fa-edit`
+                    const requiredCheckboxSelector = `#required_${panelId}`
+                    const readonlyCheckboxSelector = `#readonly_${panelId}`
+                    const optionPanelSelector = `div#option_${panelId}`
+                    $(optionPanelSelector).hide()
+                    $(closeIconSelector).click(function (event) {
+                      BuildItemBuilder.removePanel($(this).parent().parent().attr('id'))  })
+                    $(editIconSelector).click(function (event) {
+                      BuildItemBuilder.toggleOptions($(this).parent().parent().attr('id'))  })
+                    $(requiredCheckboxSelector).click(function (event) {
+                      BuildItemBuilder.toggleRequired($(this).parent().parent().parent().attr('id')) })
+                    $(readonlyCheckboxSelector).click(function (event) {
+                      BuildItemBuilder.toggleReadonly($(this).parent().parent().parent().attr('id'))  })
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
   }
 
   createItemsSection (element, datas) {
@@ -234,7 +336,7 @@ class BuildItem {
   static addPicklist (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <select class="form-control" id="${attributes.name}" name="${attributes.name}" listId="${attributes.listId}">
+    <select class="form-control" id="${attributes.id}" name="${attributes.name}" listId="${attributes.listId}">
     <option value="1">One</option>
     <option value="2">Two</option>
     <option value="3">Three</option>
@@ -246,7 +348,7 @@ class BuildItem {
   static addPicklistMulti (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <select class="form-control" multiple id="${attributes.name}" name="${attributes.name}" listId="${attributes.listId}">
+    <select class="form-control" multiple id="${attributes.id}" name="${attributes.name}" listId="${attributes.listId}">
     <option value="1">One</option>
     <option value="2">Two</option>
     <option value="3">Three</option>
@@ -257,7 +359,7 @@ class BuildItem {
 
   static addCheckbox (attributes) {
     const item = `<div class="form-group form-check form-item">
-    <input type="checkbox" class="form-check-input" id="${attributes.name}" name="${attributes.name}">
+    <input type="checkbox" class="form-check-input" id="${attributes.id}" name="${attributes.name}">
     <label class="form-check-label control-label" for="${attributes.name}">${attributes.label}</label>
     </div>`
     return item
@@ -266,7 +368,7 @@ class BuildItem {
   static addText (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <input type="text" class="form-control" id="${attributes.name}" name="${attributes.name}" placeholder="Enter value">
+    <input type="text" class="form-control" id="${attributes.id}" name="${attributes.name}" placeholder="Enter value">
     </div>`
     return item
   }
@@ -274,7 +376,7 @@ class BuildItem {
   static addPhone (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <input type="phone" class="form-control" id="${attributes.name}" name="${attributes.name}" placeholder="Enter phone number">
+    <input type="phone" class="form-control" id="${attributes.id}" name="${attributes.name}" placeholder="Enter phone number">
     </div>`
     return item
   }
@@ -282,7 +384,7 @@ class BuildItem {
   static addNumber (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <input type="number" class="form-control" id="${attributes.name}" name="${attributes.name}" placeholder="Enter value">
+    <input type="number" class="form-control" id="${attributes.id}" name="${attributes.name}" placeholder="Enter value">
     </div>`
     return item
   }
@@ -290,7 +392,7 @@ class BuildItem {
   static addCurrency (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <input type="number" class="form-control" id="${attributes.name}" name="${attributes.name}" placeholder="Enter amount">
+    <input type="number" class="form-control" id="${attributes.id}" name="${attributes.name}" placeholder="Enter amount">
     </div>`
     return item
   }
@@ -298,14 +400,17 @@ class BuildItem {
   static addDate (attributes) {
     const item = `<div class="form-group form-item">
     <label class="control-label" for="${attributes.name}">${attributes.label}</label>
-    <input type="date" class="form-control" id="${attributes.name}" name="${attributes.name}" placeholder="Enter value">
+    <input type="date" class="form-control" id="${attributes.id}" name="${attributes.name}" placeholder="Enter value">
     </div>`
     return item
   }
 
   static addCompleteButton (attributes) {
+    const buttonType = attributes.type || 'submit'
+    const buttonClass = attributes.class || 'btn-primary'
+    const buttonText = attributes.text || 'Complete'
     const item = `<div class="form-group form-item">
-    <button type="submit" class="btn btn-primary form-item">Complete</button>
+    <button type="${buttonType}" class="btn ${buttonClass} form-item">${buttonText}</button>
     </div>`
     return item
   }
@@ -450,40 +555,45 @@ class BuildItemBuilder extends BuildItem {
     return { newElement: newElement, panelId: panelId }
   }
 
-  static addButtonConfigPanel (element) {
+  static addButtonConfigPanel (element, attributes) {
     const panelId = 'panel_' + Math.random().toString(36).substr(2, 17)
+    const buttonText = attributes.text || 'complete'
+    const buttonType = attributes.type || 'submit'
+    const outlinePattern = new RegExp('outline-')
+    const buttonShape = attributes.class.match(outlinePattern) ? 'outline' : 'plain'
+    const buttonColor = attributes.class.substring(attributes.class.lastIndexOf('-') + 1) || 'primary'
     const selectColor = `<div class="form-group ">
     <label class="control-label" for="buttonColor${panelId}">Button Type</label>
     <select class="form-control" id="buttonColor${panelId}" name="buttonColor${panelId}">
-    <option value="primary" selected>Primary</option>
-    <option value="secondary">Secondary</option>
-    <option value="success">Success</option>
-    <option value="danger">Danger</option>
-    <option value="warning">Warning</option>
-    <option value="info">Info</option>
-    <option value="light">Light</option>
-    <option value="dark">Dark</option>
-    <option value="link">Link</option>
+    <option value="primary" ${buttonColor === 'primary' ? 'selected' : ''}>Primary</option>
+    <option value="secondary" ${buttonColor === 'secondary' ? 'selected' : ''}>Secondary</option>
+    <option value="success" ${buttonColor === 'success' ? 'selected' : ''}>Success</option>
+    <option value="danger" ${buttonColor === 'danger' ? 'selected' : ''}>Danger</option>
+    <option value="warning ${buttonColor === 'warning' ? 'selected' : ''}">Warning</option>
+    <option value="info" ${buttonColor === 'info' ? 'selected' : ''}>Info</option>
+    <option value="light" ${buttonColor === 'light' ? 'selected' : ''}>Light</option>
+    <option value="dark" ${buttonColor === 'dark' ? 'selected' : ''}>Dark</option>
+    <option value="link" ${buttonColor === 'link' ? 'selected' : ''}>Link</option>
     </select>
     </div>`
     const selectShape = `<div class="form-group ">
     <label class="control-label" for="buttonShape${panelId}">Button Shape</label>
     <select class="form-control" id="buttonShape${panelId}" name="buttonShape${panelId}">
-    <option value="plain" selected>Plain</option>
-    <option value="outline">Outlined</option>
+    <option value="plain" ${buttonShape === 'plain' ? 'selected' : ''}>Plain</option>
+    <option value="outline" ${buttonShape === 'outline' ? 'selected' : ''}>Outlined</option>
     </select>
     </div>`
     const selectType = `<div class="form-group ">
     <label class="control-label" for="buttonType${panelId}">Button Type</label>
     <select class="form-control" id="buttonType${panelId}" name="buttonType${panelId}">
-    <option value="submit" selected>Submit</option>
-    <option value="reset">Reset</option>
-    <option value="button">Button</option>
+    <option value="submit" ${buttonType === 'submit' ? 'selected' : ''}>Submit</option>
+    <option value="reset" ${buttonType === 'reset' ? 'selected' : ''}>Reset</option>
+    <option value="button" ${buttonType === 'button' ? 'selected' : ''}>Button</option>
     </select>
     </div>`
     const buttonValue = `<div class="form-group">
     <label class="control-label" for="buttonName${panelId}">Button Name</label>
-    <input type="text" class="form-control" id="buttonName${panelId}" name="buttonName${panelId}" value="Complete">
+    <input type="text" class="form-control" id="buttonName${panelId}" name="buttonName${panelId}" value="${buttonText}">
     </div>`
     let newElement = `<div class="configPanel" id="${panelId}">
     <div class="itemIcons float-right"><i class="far fa-edit"></i><i class="far fa-window-close"></i></div>
@@ -500,7 +610,7 @@ class BuildItemBuilder extends BuildItem {
 
   static addCompleteButton (attributes) {
     let newItem = super.addCompleteButton(attributes)
-    return this.addButtonConfigPanel(newItem)
+    return this.addButtonConfigPanel(newItem, attributes)
   }
   static addPicklistMulti (attributes) {
     let newItem = super.addPicklistMulti(attributes)
@@ -542,6 +652,7 @@ class fkycedDisplayForm {
     this.form = form
     this.options = Object.assign({id: 'formDisplay', action: '', method: 'POST' , class: ''}, options)
     this.datas = datas
+    console.log(datas)
     this.refId = this.options.task
   }
 
@@ -600,12 +711,12 @@ class fkycedDisplayForm {
     // insert existing value
     if (this.datas) {
       for (const [dataKey, dataValue] of Object.entries(this.datas)) {
-        if ($('#' + dataValue.name).is("input") && $('#' + dataValue.name).attr('type') === 'text') {
-          $('#' + dataValue.name).val(dataValue.value)
-        } else if ($('#' + dataValue.name).is("select")) {
-          $('#' + dataValue.name).val(dataValue.value)
+        if ($('[name=' + dataValue.name + ']').is("input") && $('#' + dataValue.name).attr('type') === 'text') {
+          $('[name=' + dataValue.name + ']').val(dataValue.value)
+        } else if ($('[name=' + dataValue.name + ']').is("select")) {
+          $('[name=' + dataValue.name + ']').val(dataValue.value)
         } else {
-          $('#' + dataValue.name).val(dataValue.value)
+          $('[name=' + dataValue.name + ']').val(dataValue.value)
         }
       }
     }

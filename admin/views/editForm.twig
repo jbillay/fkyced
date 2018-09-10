@@ -13,7 +13,7 @@
     Issue when we save the form : {{ error }}
   </div>
   {% endif %}
-  <form id="formForm" action="/form/edit/{{ form.id }}" method="POST">
+  <form id="formForm" action="/form/edit/{{ form.id }}" method="POST" novalidate>
     <div class="form-group">
       <label for="formId">identifier</label>
       <input type="text" class="form-control" id="formId" name="formId" aria-describedby="identifierHelp" placeholder="Enter form identifier" value="{{ form.formId }}">
@@ -28,7 +28,7 @@
       <label for="formEditor">Formular</label>
       <div id="formEditor" name="formEditor"></div>
     </div>
-    <button type="submit" class="btn btn-primary">Update</button>
+    <button type="submit" id="submitForm" class="btn btn-primary">Update</button>
   </form>
 {% endblock %}
 
@@ -45,15 +45,23 @@
       }
       const formData = {{ form.formStructure }}
       const formBuilder = new fkycedBuildForm($('#formEditor'), {}, datas, formData)
+      $('#submitForm').click(function () {
+        $('#submitForm', $(this).parents('form')).removeAttr('clicked')
+        $(this).attr('clicked', 'true')
+      })
       $('#formForm').submit(function (event) {
-        event.preventDefault()
-        $('<input>').attr({
-          type: 'hidden',
-          id: 'data',
-          name: 'data',
-          value: formBuilder.getJson()
-        }).appendTo('#formForm')
-        this.submit()
+        if ($('button[type=submit][clicked=true]').length === 0) {
+          return false
+        } else {
+          event.preventDefault()
+          $('<input>').attr({
+            type: 'hidden',
+            id: 'data',
+            name: 'data',
+            value: formBuilder.getJson()
+          }).appendTo('#formForm')
+          this.submit()
+        }
       })
     })
   </script>

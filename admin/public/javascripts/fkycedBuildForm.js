@@ -558,33 +558,37 @@ class BuildItemBuilder extends BuildItem {
   static addButtonConfigPanel (element, attributes) {
     const panelId = 'panel_' + Math.random().toString(36).substr(2, 17)
     const buttonText = attributes.text || 'complete'
+    const buttonType = attributes.type || 'submit'
+    const outlinePattern = new RegExp('outline-')
+    const buttonShape = attributes.class.match(outlinePattern) ? 'outline' : 'plain'
+    const buttonColor = attributes.class.substring(attributes.class.lastIndexOf('-') + 1) || 'primary'
     const selectColor = `<div class="form-group ">
     <label class="control-label" for="buttonColor${panelId}">Button Type</label>
     <select class="form-control" id="buttonColor${panelId}" name="buttonColor${panelId}">
-    <option value="primary" selected>Primary</option>
-    <option value="secondary">Secondary</option>
-    <option value="success">Success</option>
-    <option value="danger">Danger</option>
-    <option value="warning">Warning</option>
-    <option value="info">Info</option>
-    <option value="light">Light</option>
-    <option value="dark">Dark</option>
-    <option value="link">Link</option>
+    <option value="primary" ${buttonColor === 'primary' ? 'selected' : ''}>Primary</option>
+    <option value="secondary" ${buttonColor === 'secondary' ? 'selected' : ''}>Secondary</option>
+    <option value="success" ${buttonColor === 'success' ? 'selected' : ''}>Success</option>
+    <option value="danger" ${buttonColor === 'danger' ? 'selected' : ''}>Danger</option>
+    <option value="warning ${buttonColor === 'warning' ? 'selected' : ''}">Warning</option>
+    <option value="info" ${buttonColor === 'info' ? 'selected' : ''}>Info</option>
+    <option value="light" ${buttonColor === 'light' ? 'selected' : ''}>Light</option>
+    <option value="dark" ${buttonColor === 'dark' ? 'selected' : ''}>Dark</option>
+    <option value="link" ${buttonColor === 'link' ? 'selected' : ''}>Link</option>
     </select>
     </div>`
     const selectShape = `<div class="form-group ">
     <label class="control-label" for="buttonShape${panelId}">Button Shape</label>
     <select class="form-control" id="buttonShape${panelId}" name="buttonShape${panelId}">
-    <option value="plain" selected>Plain</option>
-    <option value="outline">Outlined</option>
+    <option value="plain" ${buttonShape === 'plain' ? 'selected' : ''}>Plain</option>
+    <option value="outline" ${buttonShape === 'outline' ? 'selected' : ''}>Outlined</option>
     </select>
     </div>`
     const selectType = `<div class="form-group ">
     <label class="control-label" for="buttonType${panelId}">Button Type</label>
     <select class="form-control" id="buttonType${panelId}" name="buttonType${panelId}">
-    <option value="submit" selected>Submit</option>
-    <option value="reset">Reset</option>
-    <option value="button">Button</option>
+    <option value="submit" ${buttonType === 'submit' ? 'selected' : ''}>Submit</option>
+    <option value="reset" ${buttonType === 'reset' ? 'selected' : ''}>Reset</option>
+    <option value="button" ${buttonType === 'button' ? 'selected' : ''}>Button</option>
     </select>
     </div>`
     const buttonValue = `<div class="form-group">
@@ -648,6 +652,7 @@ class fkycedDisplayForm {
     this.form = form
     this.options = Object.assign({id: 'formDisplay', action: '', method: 'POST' , class: ''}, options)
     this.datas = datas
+    console.log(datas)
     this.refId = this.options.task
   }
 
@@ -706,12 +711,12 @@ class fkycedDisplayForm {
     // insert existing value
     if (this.datas) {
       for (const [dataKey, dataValue] of Object.entries(this.datas)) {
-        if ($('#' + dataValue.name).is("input") && $('#' + dataValue.name).attr('type') === 'text') {
-          $('#' + dataValue.name).val(dataValue.value)
-        } else if ($('#' + dataValue.name).is("select")) {
-          $('#' + dataValue.name).val(dataValue.value)
+        if ($('[name=' + dataValue.name + ']').is("input") && $('#' + dataValue.name).attr('type') === 'text') {
+          $('[name=' + dataValue.name + ']').val(dataValue.value)
+        } else if ($('[name=' + dataValue.name + ']').is("select")) {
+          $('[name=' + dataValue.name + ']').val(dataValue.value)
         } else {
-          $('#' + dataValue.name).val(dataValue.value)
+          $('[name=' + dataValue.name + ']').val(dataValue.value)
         }
       }
     }
