@@ -560,8 +560,12 @@ class BuildItemBuilder extends BuildItem {
     const buttonText = attributes.text || 'complete'
     const buttonType = attributes.type || 'submit'
     const outlinePattern = new RegExp('outline-')
-    const buttonShape = attributes.class.match(outlinePattern) ? 'outline' : 'plain'
-    const buttonColor = attributes.class.substring(attributes.class.lastIndexOf('-') + 1) || 'primary'
+    let buttonShape = 'plain'
+    let buttonColor = 'primary'
+    if (attributes.class) {
+      buttonShape = attributes.class.match(outlinePattern) ? 'outline' : 'plain'
+      buttonColor = attributes.class.substring(attributes.class.lastIndexOf('-') + 1) || 'primary'
+    }
     const selectColor = `<div class="form-group ">
     <label class="control-label" for="buttonColor${panelId}">Button Type</label>
     <select class="form-control" id="buttonColor${panelId}" name="buttonColor${panelId}">

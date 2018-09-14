@@ -73,7 +73,7 @@ router.post('/save', async function(req, res, next) {
       number: 'double',
       object: 'integer',
       phone: 'string',
-      picklist: 'json',
+      picklist: 'integer',
       picklistMulti: 'json',
       text: 'string',
       textArea: 'string'

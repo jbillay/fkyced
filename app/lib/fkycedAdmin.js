@@ -35,7 +35,6 @@ const getListValues = async (id) => {
       const values = response.data.values
       return values
     } else {
-      Promise
       console.error(response.data.error)
     }
   } catch(error) {
@@ -43,4 +42,33 @@ const getListValues = async (id) => {
   }
 }
 
-module.exports = { getCurrentProcess, getForm }
+const getListValue = async (listId, id) => {
+  try {
+    const response = await request.get(config.adminApi + '/api/list/' + listId + '/value/' + id)
+    if (response.data.status === 'success') {
+      const value = response.data.value
+      return value
+    } else {
+      console.error(response.data.error)
+    }
+  } catch(error) {
+    console.error(error)
+  }
+}
+
+
+const getFieldCamundaType = async (attributesList) => {
+  try {
+    const response = await request.post(config.adminApi + '/api/field/definition', attributesList)
+    if (response.data.status === 'success') {
+      const values = response.data.values
+      return values
+    } else {
+      console.error(response.data.error)
+    }
+  } catch(error) {
+    console.error(error)
+  }
+}
+
+module.exports = { getCurrentProcess, getForm, getListValues, getListValue, getFieldCamundaType }

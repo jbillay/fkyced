@@ -166,10 +166,20 @@ router.post('/completeTask/', async function(req, res, next) {
     } else if (builtForm.type === 'external') {
       // TODO: need to check camunda type in the fields table
       workflowData = req.body
-      Object.keys(workflowData).map(function(key, index) {
-        workflowData[key] = {value: workflowData[key]}
-      })
       delete workflowData.refId
+      const fieldsInfo = await fkycedAdmin.getFieldCamundaType(Object.keys(workflowData))
+      await Promise.all(Object.keys(workflowData).map(async function (key, index) {
+        const fieldInfo = _.find(fieldsInfo, {'name': key})
+        const camundaType = fieldInfo ? fieldInfo.camundaType : null
+        const fieldType = fieldInfo ? fieldInfo.fieldType : null
+        if (fieldType === 'picklist') {
+          const keyValue = `${key}Value`
+          const keyValueValue = await fkycedAdmin.getListValue(fieldInfo.listId, workflowData[key])
+          workflowData[keyValue] = {value: keyValueValue}
+        }
+        workflowData[key] = {value: workflowData[key]}
+      }))
+      console.log(workflowData)
     }
     const variables = { variables : workflowData }
     await camunda.completeTask(taskId, variables)

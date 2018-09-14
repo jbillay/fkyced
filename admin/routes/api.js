@@ -42,4 +42,33 @@ router.get('/list/values/:id', cors(), async function (req, res, next) {
   }
 })
 
+router.get('/list/:listId/value/:id', cors(), async function (req, res, next) {
+  const listId = req.params.listId
+  const valueId = req.params.id
+  if (listId && valueId) {
+    try {
+      const list = await models.fkycedLists.findOne({ where: { id: listId } })
+      const values = JSON.parse(list.valueList)
+      const value = values[valueId]
+      res.json({ status: 'success', value: value })
+    } catch (error) {
+      res.json({ status: 'error', msg: error })
+    }
+  } else {
+    res.json({ status: 'error', msg: 'List id and value id are required !' })
+  }
+})
+
+router.post('/field/definition', cors(), async function (req, res, next) {
+  const fieldList = req.body
+  if (fieldList) {
+    try {
+      const fieldsInfo = await models.fkycedFields.findAll({ where: { name: fieldList } })
+      res.json({ status: 'success', values: fieldsInfo })
+    } catch (error) {
+      res.json({ status: 'error', msg: error })
+    }
+  }
+})
+
 module.exports = router
