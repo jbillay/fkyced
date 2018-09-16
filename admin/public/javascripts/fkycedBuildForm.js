@@ -722,32 +722,34 @@ class fkycedDisplayForm {
   }
 
   display () {
-    // Transform form data to object
-    let formObject = JSON.parse(this.form)
-    // Parse form object to replace list values
-    this.checkForListOptions(formObject)
-    // Check if read only need to be set
-    if (this.options.readOnly) {
-      this.setDisableFlag(formObject)
-    }
-    // Transform form object into HTML
-    const htmlForm = window.himalaya.stringify(formObject)
-    // Wrap up HTML form with form tags and include Task ID
-    const html = `<form id="${this.options.id}" action="${this.options.action}"
-                    method="${this.options.method}" class="${this.options.class}">
-                    <input type="hidden" id="refId" name="refId" value="${this.refId}">
-                    ${htmlForm}</form>`
-    // Map the html form to the screen
-    this.element.append(html)
-    // insert existing value
-    if (this.datas) {
-      for (const [dataKey, dataValue] of Object.entries(this.datas)) {
-        if ($('[name=' + dataValue.name + ']').is("input") && $('#' + dataValue.name).attr('type') === 'text') {
-          $('[name=' + dataValue.name + ']').val(dataValue.value)
-        } else if ($('[name=' + dataValue.name + ']').is("select")) {
-          $('[name=' + dataValue.name + ']').val(dataValue.value)
-        } else {
-          $('[name=' + dataValue.name + ']').val(dataValue.value)
+    if (this.form) {
+      // Transform form data to object
+      let formObject = JSON.parse(this.form)
+      // Parse form object to replace list values
+      this.checkForListOptions(formObject)
+      // Check if read only need to be set
+      if (this.options.readOnly) {
+        this.setDisableFlag(formObject)
+      }
+      // Transform form object into HTML
+      const htmlForm = window.himalaya.stringify(formObject)
+      // Wrap up HTML form with form tags and include Task ID
+      const html = `<form id="${this.options.id}" action="${this.options.action}"
+                      method="${this.options.method}" class="${this.options.class}">
+                      <input type="hidden" id="refId" name="refId" value="${this.refId}">
+                      ${htmlForm}</form>`
+      // Map the html form to the screen
+      this.element.append(html)
+      // insert existing value
+      if (this.datas) {
+        for (const [dataKey, dataValue] of Object.entries(this.datas)) {
+          if ($('[name=' + dataValue.name + ']').is("input") && $('#' + dataValue.name).attr('type') === 'text') {
+            $('[name=' + dataValue.name + ']').val(dataValue.value)
+          } else if ($('[name=' + dataValue.name + ']').is("select")) {
+            $('[name=' + dataValue.name + ']').val(dataValue.value)
+          } else {
+            $('[name=' + dataValue.name + ']').val(dataValue.value)
+          }
         }
       }
     }

@@ -2,7 +2,7 @@
 
 {% block content %}
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
-    <h2>My Processes</h2>
+    <h2>In Flight Onboarding Request</h2>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group mr-2">
           <button class="btn btn-sm btn-outline-secondary">Share</button>
@@ -15,16 +15,16 @@
   </div>
   <div class="table-responsive">
     <table class="table table-striped table-sm">
-      <thead><tr><th>Id</th><th>Name</th><th>Start</th><th>End</th><th>Duration</th><th>Status</th></tr></thead>
+      <thead><tr><th>Client Name</th><th>Entity Type</th><th>Role</th><th>Start Date</th><th>Since</th><th>Current Task</th></tr></thead>
       <tbody>
-        {% for process in processes %}
+        {% for process in inflightProcess %}
           <tr>
-            <th scope="row"><a href="/taskList/{{process.id}}">{{ process.id }}</a></th>
-            <td>{{ process.processDefinitionName }}</td>
-            <td>{{ process.startTime | date("m/d/Y") }}</td>
-            <td>{{ process.endTime | date("m/d/Y") }}</td>
-            <td>{{ process.durationInMillis | round }}</td>
-            <td>{{ process.state }}</td>
+            <th scope="row"><a href="/taskList/{{process.id}}">{{ process.EntityName }}</a></th>
+            <td>{{ process.EntityTypeValue }}</td>
+            <td>{{ process.ClientRoleValue }}</td>
+            <td>{{ process.startDate | date("m/d/Y") }}</td>
+            <td>{{ process.since }}</td>
+            <td>{{ process.currentTask }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -34,5 +34,35 @@
 <a href="/startProcess/{{ currentProcess.key }}/{{ currentProcess.version }}" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">
   New Onboarding
 </a>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
+  <h2>Completed Onboarding Request</h2>
+  <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group mr-2">
+        <button class="btn btn-sm btn-outline-secondary">Share</button>
+        <button class="btn btn-sm btn-outline-secondary">Export</button>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+        <span data-feather="calendar">Due this week</span>
+      </button>
+  </div>
+</div>
+<div class="table-responsive">
+  <table class="table table-striped table-sm">
+    <thead><tr><th>Client Name</th><th>Entity Type</th><th>Role</th><th>End Date</th><th>Request Status</th></tr></thead>
+    <tbody>
+      {% for process in completedProcess %}
+        <tr>
+          <th scope="row"><a href="/taskList/{{process.id}}">{{ process.EntityName }}</a></th>
+          <td>{{ process.EntityTypeValue }}</td>
+          <td>{{ process.ClientRoleValue }}</td>
+          <td>{{ process.endTime | date("m/d/Y") }}</td>
+          <td>{{ process.ClientRequestValidationValue }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 
 {% endblock %}

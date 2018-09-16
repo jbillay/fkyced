@@ -11,7 +11,7 @@ router.get('/', async function(req, res, next) {
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
     const processList = await camunda.getProcessList()
-    const currentProcess = await models.processes.findOne({ where: { active: true } })
+    const currentProcess = await models.fkycedProcesses.findOne({ where: { active: true } })
     const processOnlyList = _.uniqBy(processList, 'key');
     res.render('processes', { user: userInfo, processList: processList,
       currentProcess: currentProcess, processOnlyList: processOnlyList })
@@ -28,13 +28,13 @@ router.post('/', async function(req, res, next) {
   } else {
     processName = processKey
   }
-  const activeProcess = await models.processes.findOne({ where: { active: true } })
+  const activeProcess = await models.fkycedProcesses.findOne({ where: { active: true } })
   if (activeProcess) {
     activeProcess.active = false
     activeProcess.inactiveSince = new Date()
     const oldProcess = await activeProcess.save()
   }
-  const currentProcess = await models.processes.create(
+  const currentProcess = await models.fkycedProcesses.create(
     { processKey: processKey, processName: processName, processVersion: processVersion })
   res.redirect('/processes')
 })

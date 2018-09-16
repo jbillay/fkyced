@@ -3,7 +3,9 @@ const router = express.Router()
 const camunda = require('../lib/camunda')
 const fkycedAdmin  =require('../lib/fkycedAdmin')
 const formBuilder = require('../lib/formBuilder')
+const fkycedUtils  =require('../lib/fkycedUtils')
 const _ = require('lodash')
+const moment = require('moment')
 
 router.get('/', async function(req, res, next) {
     res.render('login')
@@ -40,8 +42,28 @@ router.get('/home', async function(req, res, next) {
       if (processDefinition && processDefinition.id) {
         const processInstancesActivity = await camunda.getInstanceHistory(processDefinition.id)
         _.map(processInstancesActivity, function (process)
-              { return process.durationInMillis = parseInt(process.durationInMillis) / 60000 })
-        res.render('index', { user: userInfo, processes: processInstancesActivity, currentProcess: currentProcess, title: 'Home Page' })
+              { return process.since = moment().fromNow(process.startTime) })
+        let inflightProcessList = []
+        let completedProcessList = []
+        await Promise.all(processInstancesActivity.map(async function (process) {
+          const variables = await camunda.getHistoryVariableInstance(process.id)
+          if (process.state === 'COMPLETED') {
+            variables.forEach(function (variable) {
+              process[variable.name] = variable.value
+            })
+            completedProcessList.push(process)
+          } else if (process.state === 'ACTIVE') {
+            const openTaskList = await camunda.getOpenTasks(process.id)
+            process.currentTask = openTaskList[0].name
+            variables.forEach(function (variable) {
+              process[variable.name] = variable.value
+            })
+            inflightProcessList.push(process)
+          }
+        }))
+        res.render('index', { user: userInfo, inflightProcess: inflightProcessList,
+                              completedProcess: completedProcessList, currentProcess: currentProcess,
+                              title: 'Home Page' })
       } else {
         res.render('error', { user: userInfo, message: 'Process not found', title: 'Home Page' })
       }
@@ -118,13 +140,41 @@ router.get('/taskList/:processInstanceId', async function(req, res, next) {
     res.redirect('/')
   } else {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
-    const processInstanceId = req.params.processInstanceId;
-    const taskList = await camunda.getOpenTasks(processInstanceId);
-    let taskHistoryList = await camunda.getInstanceTaskHistory(processInstanceId)
-    taskHistoryList = _.filter(taskHistoryList, function(o) { return !(o.endTime===null) })
-    res.render('taskList', { user: userInfo,
-                              tasks: taskList, taskHistory: taskHistoryList,
-                              title: 'Task List', processInstance: processInstanceId })
+    const processInstanceId = req.params.processInstanceId
+    const processInfo = await camunda.getProcessDefinition(processInstanceId)
+    const xml = await camunda.getProcessXML(processInfo.processDefinitionId)
+    const processStructure = await camunda.getProcessStructure(xml)
+    const openTaskList = await camunda.getOpenTasks(processInstanceId)
+    let completedTaskList = await camunda.getInstanceTaskHistory(processInstanceId)
+    completedTaskList = _.filter(completedTaskList, function(o) { return !(o.endTime===null) })
+    _.forEach(processStructure.structure, function(value, key) {
+      if (value.type === 'subProcess') {
+        const nbTasks = value.tasks.length
+        let isStarted = false
+        let nbCompletedTasks = 0
+        _.forEach(value.tasks, function(taskValue, taskKey) {
+          const statusInfo = fkycedUtils.getTaskStatusInfo(taskValue.id, openTaskList, completedTaskList)
+          taskValue = Object.assign(taskValue, statusInfo)
+          if (statusInfo.status === 'In Progress') {
+            isStarted = true
+          } else if (statusInfo.status === 'Completed') {
+            isStarted = true
+            nbCompletedTasks++
+          }
+        })
+        if (nbTasks === nbCompletedTasks) {
+          value.status = 'Completed'
+        } else if (isStarted) {
+          value.status = 'In Progress'
+        } else {
+          value.status = 'Not Started'
+        }
+      } else if (value.type === 'task') {
+        const statusInfo = fkycedUtils.getTaskStatusInfo(value.id, openTaskList, completedTaskList)
+        value = Object.assign(value, statusInfo)
+      }
+    })
+    res.render('taskList', { user: userInfo, processStatus: processStructure.structure, title: 'Process Overview'})
   }
 })
 
@@ -137,9 +187,10 @@ router.get('/displayCompletedTask/:taskId', async function (req, res, next) {
     const taskId = req.params.taskId
     const task = await camunda.getCompletedTask(taskId)
     const xml = await camunda.getProcessXML(task.processDefinitionId)
-    const builtForm = await formBuilder.createByTaskId(xml, task.taskDefinitionKey, taskId)
-    if (builtForm.type === 'external') {
-      const form = await fkycedAdmin.getForm(builtForm.form)
+    const processStructure = await camunda.getProcessStructure(xml)
+    task.formKey = camunda.getTaskForm(processStructure.structure, task.taskDefinitionKey)
+    if (task.formKey) {
+      const form = await fkycedAdmin.getForm(task.formKey)
       const datas = await camunda.getProcessVariables(task.processInstanceId)
       res.render('taskCompletedTasksDisplay', {  user: userInfo, form: form, task: task, title: task.name , currentVariables: datas })
     } else {
@@ -156,14 +207,16 @@ router.get('/displayTask/:taskId', async function(req, res, next) {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
     const taskId = req.params.taskId
     const task = await camunda.getTask(taskId)
-    const xml = await camunda.getProcessXML(task.processDefinitionId)
-    const builtForm = await formBuilder.createByTaskId(xml, task.taskDefinitionKey, taskId)
-    if (builtForm.type === 'internal') {
-      res.render('taskDisplayIntForm', { user:userInfo, form: builtForm.form, title: task.name })
-    } else if (builtForm.type === 'external') {
-      const form = await fkycedAdmin.getForm(builtForm.form)
+    if (task.formKey) {
+      let error = null
+      const form = await fkycedAdmin.getForm(task.formKey)
+      if (form === null) {
+        error = 'Form not found !'
+      }
       const datas = await camunda.getProcessVariables(task.processInstanceId)
-      res.render('taskDisplayExtForm', {  user: userInfo, form: form, task: task, title: task.name , currentVariables: datas })
+      res.render('taskDisplayExtForm', { user: userInfo, form: form, task: task, title: task.name , currentVariables: datas, error: error })
+    } else {
+      res.redirect('/taskList/' + task.processInstanceId)
     }
   }
 })
@@ -176,30 +229,22 @@ router.post('/completeTask/', async function(req, res, next) {
     const userInfo = await camunda.getUserInfo(user.authenticatedUser)
     const taskId = req.body.refId
     const task = await camunda.getTask(taskId)
-    const xml = await camunda.getProcessXML(task.processDefinitionId)
-    const builtForm = await formBuilder.createByTaskId(xml, task.taskDefinitionKey, taskId)
-    let workflowData = {}
-    if (builtForm.type === 'internal') {
-      const formFields = await camunda.getFormVariable(taskId)
-      workflowData = camunda.buildTaskVariables(formFields, req.body)
-    } else if (builtForm.type === 'external') {
-      // TODO: need to check camunda type in the fields table
-      workflowData = req.body
-      delete workflowData.refId
-      const fieldsInfo = await fkycedAdmin.getFieldCamundaType(Object.keys(workflowData))
-      await Promise.all(Object.keys(workflowData).map(async function (key, index) {
-        const fieldInfo = _.find(fieldsInfo, {'name': key})
-        const camundaType = fieldInfo ? fieldInfo.camundaType : null
-        const fieldType = fieldInfo ? fieldInfo.fieldType : null
-        if (fieldType === 'picklist') {
-          const keyValue = `${key}Value`
-          const keyValueValue = await fkycedAdmin.getListValue(fieldInfo.listId, workflowData[key])
-          workflowData[keyValue] = {value: keyValueValue}
-        }
-        workflowData[key] = {value: workflowData[key]}
-      }))
-    }
+    let workflowData = req.body
+    delete workflowData.refId
+    const fieldsInfo = await fkycedAdmin.getFieldCamundaType(Object.keys(workflowData))
+    await Promise.all(Object.keys(workflowData).map(async function (key, index) {
+      const fieldInfo = _.find(fieldsInfo, {'name': key})
+      const camundaType = fieldInfo ? fieldInfo.camundaType : null
+      const fieldType = fieldInfo ? fieldInfo.fieldType : null
+      if (fieldType === 'picklist') {
+        const keyValue = `${key}Value`
+        const keyValueValue = await fkycedAdmin.getListValue(fieldInfo.listId, workflowData[key])
+        workflowData[keyValue] = {value: keyValueValue}
+      }
+      workflowData[key] = {value: workflowData[key]}
+    }))
     const variables = { variables : workflowData }
+    await camunda.setAssignee(taskId, userInfo.id)
     await camunda.completeTask(taskId, variables)
     res.redirect('/taskList/' + task.processInstanceId)
   }

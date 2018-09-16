@@ -6,6 +6,11 @@
 {% endblock %}
 
 {% block content %}
+{% if error %}
+<div class="alert alert-danger" role="alert">
+  Issue with the page : {{ error }}
+</div>
+{% endif %}
 <h1>{{task.name}}</h1>
 
 <div id="formDisplay">
@@ -22,7 +27,11 @@
   <script>
     jQuery(function($) {
       const container = $('div#formDisplay')
-      const formData = {{ form.formStructure }}
+      {% if form %}
+        const formData = {{ form.formStructure }}
+      {% else %}
+        const formData = null
+      {% endif %}
       const datas = {{ currentVariables | json_encode }}
       const formDisplay = new fkycedDisplayForm(container, formData, { action: '/completeTask', method: 'POST', task: '{{ task.id }}' }, datas)
       formDisplay.display()

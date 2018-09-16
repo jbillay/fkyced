@@ -3,15 +3,63 @@
 {% block content %}
   <h1>{{title}}</h1>
 
-  <h2>Process Instance : {{processInstance}}</h2>
-
-  <ul>
-    {% for taskHistory in taskHistory %}
-      <li><a href="/displayCompletedTask/{{ taskHistory.id }}">{{ taskHistory.name }}</a></li>
-    {% endfor %}
-    {% for task in tasks %}
-      <li><a href="/displayTask/{{ task.id }}">{{ task.name }}</a></li>
-    {% endfor %}
-  </ul>
-
+<div class="accordion" id="accordionExample">
+  {% for step in processStatus %}
+    {% if step.type == 'subProcess' %}
+      <div class="card">
+        <div class="card-header" id="headingOne">
+          <h5 class="mb-0">
+            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{ step.id }}" aria-expanded="true" aria-controls="collapse{{ step.id }}">
+              {{ step.name }}
+            </button>
+            <p class="float-right">{{ step.status }}</p>
+          </h5>
+        </div>
+        <div id="collapse{{ step.id }}" class="collapse {% if step.status != 'Not Started' %}show{% endif %}" aria-labelledby="headingOne" data-parent="#accordionExample">
+          <div class="card-body">
+            <table class="table table-hover table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">Task Name</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Since</th>
+                  <th scope="col">Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for task in step.tasks %}
+                  <tr>
+                    {% if task.status == 'In Progress' %}
+                      <th scope="row"><a href="/displayTask/{{ task.execId }}">{{ task.name }}</a></th>
+                    {% elseif  task.status == 'Completed' %}
+                      <th scope="row"><a href="/displayCompletedTask/{{ task.execId }}">{{ task.name }}</a></th>
+                    {% else %}
+                      <th scope="row">{{ task.name }}</th>
+                    {% endif %}
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.startDate | date("m/d/Y") }}</td>
+                    <td>{{ task.owner }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    {% elseif step.type == 'task' %}
+      <tr>
+        {% if step.status == 'In Progress' %}
+          <th scope="row"><a href="/displayTask/{{ step.execId }}">{{ step.name }}</a></th>
+        {% elseif  step.status == 'Completed' %}
+          <th scope="row"><a href="/displayCompletedTask/{{ step.execId }}">{{ step.name }}</a></th>
+        {% else %}
+          <th scope="row">{{ step.name }}</th>
+        {% endif %}
+        <td>{{ step.status }}</td>
+        <td>{{ step.startDate | date("m/d/Y") }}</td>
+        <td>{{ step.owner }}</td>
+      </tr>
+    {% endif %}
+  {% endfor %}
+<div>
 {% endblock %}

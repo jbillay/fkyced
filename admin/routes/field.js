@@ -84,7 +84,7 @@ router.post('/save', async function(req, res, next) {
             fieldUnique, fieldListOrValuesCheckbox, fieldListId, fieldValuesList,
             fieldObjectId, fieldDisplayLine
           } = req.body
-    const name = (fieldName === '') ? slugify(fieldLabel) : slugify(fieldName)
+    const name = (fieldName === '') ? slugify(fieldLabel, '').replace(/-/g, '') : slugify(fieldName, '').replace(/-/g, '')
     const desc = (fieldDescription === '') ? null : fieldDescription
     const helper = (fieldHelper === '') ? null : fieldHelper
     const defaultValue = (fieldDefault === '') ? null : fieldDefault

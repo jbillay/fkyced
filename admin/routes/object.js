@@ -32,7 +32,7 @@ router.post('/save', async function(req, res, next) {
     res.redirect('/')
   } else {
     const { objectId, objectLabel, objectName, objectDescription } = req.body
-    const name = objectName === '' ? slugify(objectLabel) : slugify(objectName)
+    const name = objectName === '' ? slugify(objectLabel).replace(/-/g, '') : slugify(objectName).replace(/-/g, '')
     if (typeof objectId === 'undefined') {
       try {
         const newObject = await models.fkycedObjects.create(

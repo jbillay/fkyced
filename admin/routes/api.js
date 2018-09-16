@@ -6,7 +6,7 @@ const _ = require('lodash')
 const cors = require('cors')
 
 router.get('/currentProcess', cors(), async function (req, res, next) {
-  const activeProcess = await models.processes.findOne({ where: { active: true } })
+  const activeProcess = await models.fkycedProcesses.findOne({ where: { active: true } })
   if (activeProcess) {
     const currentProcess = await camunda.searchProcess(activeProcess.processKey, activeProcess.processVersion)
     res.json({ status: 'success', key: currentProcess[0].key, version: currentProcess[0].version })

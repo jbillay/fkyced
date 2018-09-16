@@ -136,6 +136,9 @@ const createByTaskId = async function (xml, taskKey, taskId) {
         if (err) {
           reject(err)
         } else {
+          console.log(xml);
+          console.log(taskKey);
+          console.log(taskId);
           const listOfTasks = result['bpmn:definitions']['bpmn:process'][0]
           let formInfo = null
           for (const taskType in listOfTasks) {
