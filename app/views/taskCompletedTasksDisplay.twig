@@ -1,0 +1,31 @@
+{% extends "layout.twig" %}
+
+{% block head %}
+  {{ parent() }}
+  <link rel='stylesheet' href='/stylesheets/fkycedBuildForm.css' />
+{% endblock %}
+
+{% block content %}
+<h1>{{task.name}}</h1>
+
+<div id="formDisplay">
+</div>
+
+{% endblock %}
+
+{% block script %}
+  {{ parent() }}
+  <script src="/javascripts/jquery-ui.min.js"></script>
+  <script src="/javascripts/himalaya.js"></script>
+  <script src="/javascripts/fkycedBuildForm.js"></script>
+
+  <script>
+    jQuery(function($) {
+      const container = $('div#formDisplay')
+      const formData = {{ form.formStructure }}
+      const datas = {{ currentVariables | json_encode }}
+      const formDisplay = new fkycedDisplayForm(container, formData, { action: '/taskList/{{ task.processInstanceId }}', method: 'GET', task: '{{ task.id }}', readOnly: true }, datas)
+      formDisplay.display()
+    });
+  </script>
+{% endblock %}

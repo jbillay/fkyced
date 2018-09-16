@@ -128,6 +128,26 @@ router.get('/taskList/:processInstanceId', async function(req, res, next) {
   }
 })
 
+router.get('/displayCompletedTask/:taskId', async function (req, res, next) {
+  const user = req.cookies.currentUser
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    const userInfo = await camunda.getUserInfo(user.authenticatedUser)
+    const taskId = req.params.taskId
+    const task = await camunda.getCompletedTask(taskId)
+    const xml = await camunda.getProcessXML(task.processDefinitionId)
+    const builtForm = await formBuilder.createByTaskId(xml, task.taskDefinitionKey, taskId)
+    if (builtForm.type === 'external') {
+      const form = await fkycedAdmin.getForm(builtForm.form)
+      const datas = await camunda.getProcessVariables(task.processInstanceId)
+      res.render('taskCompletedTasksDisplay', {  user: userInfo, form: form, task: task, title: task.name , currentVariables: datas })
+    } else {
+      res.redirect('/taskList/' + task.processInstanceId)
+    }
+  }
+})
+
 router.get('/displayTask/:taskId', async function(req, res, next) {
   const user = req.cookies.currentUser
   if (typeof user === "undefined" || !user.authenticated) {
@@ -143,8 +163,7 @@ router.get('/displayTask/:taskId', async function(req, res, next) {
     } else if (builtForm.type === 'external') {
       const form = await fkycedAdmin.getForm(builtForm.form)
       const datas = await camunda.getProcessVariables(task.processInstanceId)
-      console.log(datas);
-      res.render('taskDisplayExtForm', { user: userInfo, form: form, task: task, title: task.name, currentVariables: datas })
+      res.render('taskDisplayExtForm', {  user: userInfo, form: form, task: task, title: task.name , currentVariables: datas })
     }
   }
 })
@@ -179,7 +198,6 @@ router.post('/completeTask/', async function(req, res, next) {
         }
         workflowData[key] = {value: workflowData[key]}
       }))
-      console.log(workflowData)
     }
     const variables = { variables : workflowData }
     await camunda.completeTask(taskId, variables)

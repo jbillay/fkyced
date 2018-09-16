@@ -146,6 +146,16 @@ const getTask = async taskId => {
   }
 }
 
+const getCompletedTask = async taskId => {
+  try {
+    const response = await request.get(config.engineApi + '/history/task?taskId=' + taskId)
+    const task = response.data[0]
+    return task
+  } catch(error) {
+    console.error(error)
+  }
+}
+
 const getProcessVariables = async processId => {
   try {
     const response = await request.get(config.engineApi + '/variable-instance?processInstanceIdIn=' + processId);
@@ -232,6 +242,7 @@ module.exports = {  searchProcess,
                     getFormVariable,
                     getProcessVariables,
                     getTask,
+                    getCompletedTask,
                     getRenderedForm,
                     completeTask,
                     getInstances,

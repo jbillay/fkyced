@@ -295,7 +295,7 @@ class fkycedBuildForm {
     const completeButton = '<li class="ui-widget-content" name="CompleteButton" id="-1"><i class="fas fa-clipboard-list"></i> Complete Button</li>'
     let html = '<div id="ComponentsList"'
     html += visible ? '' : ' class="SectionNotDisplayed"'
-    html += '><ol id="fkycedSelectableItems">' + completeButton + '</ol></div>'
+    html += '><ol id="fkycedSelectableItems" name="components">' + completeButton + '</ol></div>'
     element.append(html)
     $('#fkycedSelectableItems li').draggable({ revert: true })
   }
@@ -303,7 +303,7 @@ class fkycedBuildForm {
   createFieldsList (element, datas, visible) {
     let htmlList = `<div id="FieldsList">
     <input type="text" class="form-control" id="ListFieldsFilter" name="ListFieldsFilter" placeholder="Enter field name">
-    <ol id="fkycedSelectableItems">`
+    <ol id="fkycedSelectableItems" name="fields">`
     if (datas.objects) {
       for (const [objectKey, objectInfo] of Object.entries(datas.objects)) {
         for (const [key, value] of Object.entries(objectInfo.fields)) {
@@ -316,7 +316,7 @@ class fkycedBuildForm {
     $('#fkycedSelectableItems li').draggable({ revert: true })
     $('#ListFieldsFilter').bind('input', function (event) {
       const filter = $(this).val()
-      $('#fkycedSelectableItems li').each(function(index) {
+      $('#fkycedSelectableItems[name*="fields"] li').each(function(index) {
         const pattern = new RegExp(filter, "ig")
         if (!$(this).text().match(pattern)) {
           $(this).hide()
@@ -326,6 +326,7 @@ class fkycedBuildForm {
       });
     })
   }
+
 
   getJson () {
     return BuildItemBuilder.getJson()
@@ -654,10 +655,32 @@ class fkycedDisplayForm {
   constructor(element, form, options, datas) {
     this.element = element
     this.form = form
-    this.options = Object.assign({id: 'formDisplay', action: '', method: 'POST' , class: ''}, options)
+    this.options = Object.assign({id: 'formDisplay', action: '', method: 'POST' , class: '', readOnly: false}, options)
     this.datas = datas
-    console.log(datas)
     this.refId = this.options.task
+  }
+
+  setDisableFlag (form) {
+    const that = this
+    for (const [objectKey, objectInfo] of Object.entries(form)) {
+      if (objectKey === 'tagName') {
+        if (objectInfo === 'input' || objectInfo === 'select' || objectInfo === 'checkbox') {
+          form.attributes.push({ key: "disabled", value: "disabled" })
+        } else if (objectInfo === 'button') {
+            form.children.forEach(function (item) {
+              if (item.type === 'text') {
+                item.content = 'Back'
+              }
+            })
+        }
+      } else {
+        if (objectInfo.children) {
+          objectInfo.children.forEach(function (item) {
+            that.setDisableFlag(item)
+          })
+        }
+      }
+    }
   }
 
   checkForListOptions (object) {
@@ -703,6 +726,10 @@ class fkycedDisplayForm {
     let formObject = JSON.parse(this.form)
     // Parse form object to replace list values
     this.checkForListOptions(formObject)
+    // Check if read only need to be set
+    if (this.options.readOnly) {
+      this.setDisableFlag(formObject)
+    }
     // Transform form object into HTML
     const htmlForm = window.himalaya.stringify(formObject)
     // Wrap up HTML form with form tags and include Task ID
