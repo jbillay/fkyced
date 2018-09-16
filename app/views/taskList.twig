@@ -2,7 +2,8 @@
 
 {% block content %}
   <h1>{{title}}</h1>
-
+  {% set iteration = 0 %}
+  {% set maxIteration = processStatus|length %}
 <div class="accordion" id="accordionExample">
   {% for step in processStatus %}
     {% if step.type == 'subProcess' %}
@@ -47,6 +48,18 @@
         </div>
       </div>
     {% elseif step.type == 'task' %}
+      {% if iteration == 0 %}
+        <table class="table table-hover table-sm">
+          <thead>
+            <tr>
+              <th scope="col">Task Name</th>
+              <th scope="col">Status</th>
+              <th scope="col">Since</th>
+              <th scope="col">Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+      {% endif %}
       <tr>
         {% if step.status == 'In Progress' %}
           <th scope="row"><a href="/displayTask/{{ step.execId }}">{{ step.name }}</a></th>
@@ -59,7 +72,12 @@
         <td>{{ step.startDate | date("m/d/Y") }}</td>
         <td>{{ step.owner }}</td>
       </tr>
+      {% if iteration == maxIteration %}
+          </tbody>
+        </table>
+      {% endif %}
     {% endif %}
+    {% set iteration = iteration + 1 %}
   {% endfor %}
 <div>
 {% endblock %}

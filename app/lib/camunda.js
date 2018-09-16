@@ -334,6 +334,10 @@ const getTaskForm = (structure, taskId) => {
             form = taskInfo.form
           }
       }
+    } else if (structureInfo.type === 'task') {
+      if (structureInfo.id === taskId) {
+        form = structureInfo.form
+      }
     }
   }
   return form

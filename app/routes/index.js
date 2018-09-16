@@ -71,6 +71,7 @@ router.get('/home', async function(req, res, next) {
   }
 })
 
+
 router.get('/processInstance/:name/:version', async function(req, res, next) {
   const user = req.cookies.currentUser
   if (typeof user === "undefined" || !user.authenticated) {
