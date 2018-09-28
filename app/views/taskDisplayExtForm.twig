@@ -16,6 +16,10 @@
 <div id="formDisplay">
 </div>
 
+<form action="/refer/previous" method="POST">
+  <input type="hidden" name="processId" value="{{ task.processInstanceId }}">
+  <button type="submit" class="btn btn-primary mb-2">Previous</button>
+</form>
 {% endblock %}
 
 {% block script %}

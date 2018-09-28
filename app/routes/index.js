@@ -54,7 +54,11 @@ router.get('/home', async function(req, res, next) {
             completedProcessList.push(process)
           } else if (process.state === 'ACTIVE') {
             const openTaskList = await camunda.getOpenTasks(process.id)
-            process.currentTask = openTaskList[0].name
+            if (openTaskList[0] && openTaskList[0].name) {
+              process.currentTask = openTaskList[0].name
+            } else {
+              process.currentTask = 'System Task'
+            }
             variables.forEach(function (variable) {
               process[variable.name] = variable.value
             })
@@ -101,8 +105,13 @@ router.get('/startProcess/:name/:version', async function(req, res, next) {
       const builtForm = await formBuilder.createByTaskType(xml, 'bpmn:startEvent', processDefinition.id, '/submitStartForm');
       res.render('taskDisplayIntForm', { user: userInfo, form: builtForm, title: 'Start Process' });
     } else {
-      const processInstance = await camunda.startProcess(processDefinition.id);
-      res.redirect('/taskList/' + processInstance.id);
+      const processInstance = await camunda.startProcess(processDefinition.id)
+      const openTaskList = await camunda.getOpenTasks(processInstance.id)
+      if (openTaskList && openTaskList[0]) {
+        res.redirect('/displayTask/' + openTaskList[0].id)
+      } else {
+        res.redirect('/taskList/' + processInstance.id)
+      }
     }
   }
 })
@@ -146,6 +155,10 @@ router.get('/taskList/:processInstanceId', async function(req, res, next) {
     const xml = await camunda.getProcessXML(processInfo.processDefinitionId)
     const processStructure = await camunda.getProcessStructure(xml)
     const openTaskList = await camunda.getOpenTasks(processInstanceId)
+    let previousTaskList = openTaskList
+    if (openTaskList.length > 0) {
+      previousTaskList = await camunda.getPreviousTaskList(processInstanceId, openTaskList[0].taskDefinitionKey, null)
+    }
     let completedTaskList = await camunda.getInstanceTaskHistory(processInstanceId)
     completedTaskList = _.filter(completedTaskList, function(o) { return !(o.endTime===null) })
     _.forEach(processStructure.structure, function(value, key) {
@@ -175,7 +188,9 @@ router.get('/taskList/:processInstanceId', async function(req, res, next) {
         value = Object.assign(value, statusInfo)
       }
     })
-    res.render('taskList', { user: userInfo, processStatus: processStructure.structure, title: 'Process Overview'})
+    res.render('taskList', {  user: userInfo, processStatus: processStructure.structure,
+                              processInstance: processInstanceId, previousTaskList: previousTaskList,
+                              title: 'Process Overview'})
   }
 })
 
@@ -248,6 +263,37 @@ router.post('/completeTask/', async function(req, res, next) {
     await camunda.setAssignee(taskId, userInfo.id)
     await camunda.completeTask(taskId, variables)
     res.redirect('/taskList/' + task.processInstanceId)
+  }
+})
+
+router.post('/refer/task', async function(req, res, next) {
+  const user = req.cookies.currentUser
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    const targetTaskId = req.body.taskId
+    const processId = req.body.processId
+    const currentTaskId = await camunda.getCurrentTaskActivityId(processId)
+    await camunda.referToSpecificTask(processId, currentTaskId, targetTaskId)
+    res.redirect('/taskList/' + processId)
+  }
+})
+
+router.post('/refer/previous', async function(req, res, next) {
+  const user = req.cookies.currentUser
+  if (typeof user === "undefined" || !user.authenticated) {
+    res.redirect('/')
+  } else {
+    const processId = req.body.processId
+    const currentTaskId = await camunda.getCurrentTaskActivityId(processId)
+    const previousTaskList = await camunda.getPreviousTaskList(processId, currentTaskId, null)
+    if (previousTaskList.length > 0) {
+      const targetTaskId = previousTaskList[previousTaskList.length - 1].id
+      await camunda.referToSpecificTask(processId, currentTaskId, targetTaskId)
+      res.redirect('/taskList/' + processId)
+    } else {
+      res.redirect('/taskList/' + processId)
+    }
   }
 })
 

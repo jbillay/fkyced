@@ -6,3 +6,11 @@ body {
 a {
   color: #00B7FF;
 }
+
+.fkycedHeader {
+  margin-top: 1rem;
+}
+
+.TitleDisplayLeft {
+  display: inline-block !important;
+}

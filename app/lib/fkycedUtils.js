@@ -8,18 +8,23 @@ const getTaskStatusInfo = function (taskId, openTasks, completedTasks) {
     owner: null,
     execId: null
   }
-  _.forEach(openTasks, function(value, key) {
-    if (taskId === value.taskDefinitionKey) {
-      statusInfo.status = 'In Progress'
-      statusInfo.startDate = value.created
+  _.forEach(completedTasks, function(value, key) {
+    if (taskId === value.taskDefinitionKey && value.deleteReason === 'completed') {
+      statusInfo.status = 'Completed'
+      statusInfo.startDate = value.endTime
+      statusInfo.owner = value.assignee
+      statusInfo.execId = value.id
+    } else if (taskId === value.taskDefinitionKey && value.deleteReason === 'deleted') {
+      statusInfo.status = 'Refered'
+      statusInfo.startDate = value.endTime
       statusInfo.owner = value.assignee
       statusInfo.execId = value.id
     }
   })
-  _.forEach(completedTasks, function(value, key) {
+  _.forEach(openTasks, function(value, key) {
     if (taskId === value.taskDefinitionKey) {
-      statusInfo.status = 'Completed'
-      statusInfo.startDate = value.endTime
+      statusInfo.status = 'In Progress'
+      statusInfo.startDate = value.created
       statusInfo.owner = value.assignee
       statusInfo.execId = value.id
     }

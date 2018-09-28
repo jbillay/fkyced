@@ -243,6 +243,89 @@ const getUserInfo = async userId => {
   }
 }
 
+const extractActivityId = node => {
+  let activityId = node.activityId
+  if (node.childActivityInstances && node.childActivityInstances[0]) {
+    activityId = extractActivityId(node.childActivityInstances[0])
+  }
+  return activityId
+}
+
+const getCurrentTaskActivityId = async instanceId => {
+  try {
+    const response = await request.get(config.engineApi + '/process-instance/' + instanceId + '/activity-instances')
+    const activityId = extractActivityId(response.data)
+    return activityId
+  } catch(error) {
+    console.error(error);
+    Promise.reject(error)
+  }
+}
+
+const referToSpecificTask = async (instanceId, currentTaskId, targetTaskId) => {
+  // POST /process-instance/{id}/modification
+  try {
+    console.log(instanceId);
+    console.log(currentTaskId);
+    console.log(targetTaskId);
+    const instructions = {
+      'instructions': [
+        { 'type': 'cancel', 'activityId': currentTaskId },
+        { 'type': 'startBeforeActivity', 'activityId': targetTaskId }
+      ]
+    }
+    const response = await request.post(config.engineApi + '/process-instance/' + instanceId + '/modification', instructions);
+  } catch(error) {
+    console.error(error)
+    Promise.reject(error)
+  }
+}
+
+const getPreviousTaskList = async (processInstanceId, currentTaskId, targetTaskId = null) => {
+  try {
+    const processInfo = await getProcessDefinition(processInstanceId)
+    const xml = await getProcessXML(processInfo.processDefinitionId)
+    const processStructure = await getProcessStructure(xml)
+    let start = 0
+    let end = 0
+    let taskContainer = null
+    let taskList = []
+    for (const [objectKey, objectInfo] of Object.entries(processStructure.structure)) {
+      if (objectInfo.type === 'subProcess') {
+        for (const [taskKey, taskInfo] of Object.entries(objectInfo.tasks)) {
+          if (taskInfo.id === currentTaskId) {
+            end = parseInt(taskKey)
+          } else if (taskInfo.id === targetTaskId) {
+            start = parseInt(taskKey)
+          }
+        }
+        if (start != 0 || end != 0) {
+          for (i = start; i < end; i++) {
+            taskList.push({id: objectInfo.tasks[i].id, name: objectInfo.tasks[i].name})
+          }
+          start = end = 0
+        }
+      } else if (objectInfo.type === 'task') {
+        if (objectInfo.id === currentTaskId) {
+          end = parseInt(objectKey)
+        } else if (objectInfo.id === targetTaskId) {
+          start = parseInt(objectKey)
+          taskContainer = processStructure.structure
+        }
+      }
+    }
+    if (start != 0 || end != 0) {
+      for (i = start + 1; i <= end; i++) {
+        taskList.push({id: objectInfo.tasks[i].id, name: objectInfo.tasks[i].name})
+      }
+    }
+    return taskList
+  } catch (error) {
+    console.error(error)
+    Promise.reject(error)
+  }
+}
+
 const verifyUserIdentity = async (username, password) => {
   // POST /identity/verify
   try {
@@ -285,9 +368,13 @@ const getSubProcessInfo = subProcessInfo => {
   subProcess.id = subProcessInfo['$'].id
   subProcess.name = subProcessInfo['$'].name
   subProcess.tasks = []
-  for (const [subProcessTaskKey, subProcessTaskInfo] of Object.entries(subProcessInfo)) {
-    if (subProcessTaskKey === 'bpmn:userTask') {
-      for (const [taskKey, taskInfo] of Object.entries(subProcessTaskInfo)) {
+  const startEventId = subProcessInfo['bpmn:startEvent'][0]['$'].id
+  const endEventId = subProcessInfo['bpmn:endEvent'][0]['$'].id
+  let currentStep = startEventId
+  while (currentStep !== endEventId) {
+    currentStep = getNextStep(currentStep, subProcessInfo['bpmn:sequenceFlow'])
+    for (const [taskKey, taskInfo] of Object.entries(subProcessInfo['bpmn:userTask'])) {
+      if (taskInfo['$'] && taskInfo['$'].id === currentStep) {
         subProcess.tasks.push(getTaskInfo(taskInfo))
       }
     }
@@ -295,7 +382,19 @@ const getSubProcessInfo = subProcessInfo => {
   return subProcess
 }
 
-// TODO: Build the structure based on the Sequence Flows
+const getNextStep = (currentId, sequenceFlows) => {
+  let nextStep = null
+  for (const [sequenceFlowKey, sequenceFlowInfo] of Object.entries(sequenceFlows)) {
+    if (sequenceFlowInfo['$']) {
+      if (sequenceFlowInfo['$'].sourceRef === currentId) {
+        nextStep = sequenceFlowInfo['$'].targetRef
+      }
+    }
+  }
+  return nextStep
+}
+
+// TODO: Build the structure based on the Sequence Flows for task only (without Sub Process)
 const getProcessStructure = async xml => {
   return new Promise(function(resolve, reject) {
       parseString(xml, function (err, result) {
@@ -366,4 +465,7 @@ module.exports = {  searchProcess,
                     getInstances,
                     getUserInfo,
                     verifyUserIdentity,
-                    getProcessStructure }
+                    getProcessStructure,
+                    referToSpecificTask,
+                    getCurrentTaskActivityId,
+                    getPreviousTaskList }

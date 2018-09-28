@@ -1,7 +1,21 @@
 {% extends "layout.twig" %}
 
 {% block content %}
-  <h1>{{title}}</h1>
+  <h1 class="TitleDisplayLeft">{{title}}</h1>
+  {% if previousTaskList.length > 0 %}
+  <form class="form-inline float-right" method="POST" action="/refer/task">
+    <div class="form-group mx-sm-3 mb-2">
+      <label for="PreviousTasks" class="sr-only">Task List</label>
+      <select class="form-control" id="PreviousTasks" name="taskId" placeholder="Previous Task(s)">
+        {% for previousTask in previousTaskList %}
+          <option value="{{ previousTask.id }}">{{ previousTask.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="hidden" name="processId" value="{{ processInstance }}">
+    </div>
+    <button type="submit" class="btn btn-primary mb-2">Refer</button>
+  </form>
+  {% endif %}
   {% set iteration = 0 %}
   {% set maxIteration = processStatus|length %}
 <div class="accordion" id="accordionExample">
