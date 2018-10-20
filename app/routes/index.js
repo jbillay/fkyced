@@ -230,7 +230,9 @@ router.get('/displayTask/:taskId', async function(req, res, next) {
         error = 'Form not found !'
       }
       const datas = await camunda.getProcessVariables(task.processInstanceId)
-      res.render('taskDisplayExtForm', { user: userInfo, form: form, task: task, title: task.name , currentVariables: datas, error: error })
+      const previousTasks = await camunda.getPreviousTaskList(task.processInstanceId, task.taskDefinitionKey, null)
+      res.render('taskDisplayExtForm', { user: userInfo, form: form, task: task, title: task.name,
+                                          currentVariables: datas, error: error, previousTasks: previousTasks })
     } else {
       res.redirect('/taskList/' + task.processInstanceId)
     }

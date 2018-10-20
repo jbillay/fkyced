@@ -24,7 +24,7 @@
             <td>{{ process.ClientRoleValue }}</td>
             <td>{{ process.startDate | date("m/d/Y") }}</td>
             <td>{{ process.since }}</td>
-            <td>{{ process.currentTask }}</td>
+            <td><a href="/taskList/{{process.id}}">{{ process.currentTask }}</a></td>
           </tr>
         {% endfor %}
       </tbody>

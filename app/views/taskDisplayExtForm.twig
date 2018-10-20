@@ -16,16 +16,19 @@
 <div id="formDisplay">
 </div>
 
+{% if previousTasks.length > 0 %}
 <form action="/refer/previous" method="POST">
   <input type="hidden" name="processId" value="{{ task.processInstanceId }}">
   <button type="submit" class="btn btn-primary mb-2">Previous</button>
 </form>
+{% endif %}
 {% endblock %}
 
 {% block script %}
   {{ parent() }}
   <script src="/javascripts/jquery-ui.min.js"></script>
   <script src="/javascripts/himalaya.js"></script>
+  <script src="/javascripts/uuidv4.js"></script>
   <script src="/javascripts/fkycedBuildForm.js"></script>
 
   <script>
