@@ -308,16 +308,17 @@ const getPreviousTaskList = async (processInstanceId, currentTaskId, targetTaskI
       } else if (objectInfo.type === 'task') {
         if (objectInfo.id === currentTaskId) {
           end = parseInt(objectKey)
+          taskContainer = processStructure.structure
         } else if (objectInfo.id === targetTaskId) {
           start = parseInt(objectKey)
-          taskContainer = processStructure.structure
         }
       }
     }
     if (start != 0 || end != 0) {
-      for (i = start + 1; i <= end; i++) {
-        taskList.push({id: objectInfo.tasks[i].id, name: objectInfo.tasks[i].name})
+      for (i = start; i < end; i++) {
+        taskList.push({id: taskContainer[i].id, name: taskContainer[i].name})
       }
+      start = end = 0
     }
     return taskList
   } catch (error) {
