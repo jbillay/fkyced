@@ -1,0 +1,39 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+  <h3>Edit Evidence</h3>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    Issue when we save the evidence : {{ error }}
+  </div>
+  {% endif %}
+  <form id="evidenceForm" action="/evidence/save" method="POST">
+    <input type="hidden" id="evidenceId" name="evidenceId" value="{{ evidence.id }}">
+    <div class="form-group">
+      <label for="evidenceName">Name</label>
+      <input type="text" class="form-control" id="evidenceName" name="evidenceName" aria-describedby="nameHelp" value="{{ evidence.name }}">
+      <small id="nameHelp" class="form-text text-muted">Define a name for your evidence.</small>
+    </div>
+    <div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="evidenceRequired" name="evidenceRequired" {% if evidence.required == true %} checked {% endif %}>
+      <label class="form-check-label" for="evidenceRequired">The evidence is always required</label>
+    </div>
+    <div class="form-group">
+      <label for="evidenceDescription">Description of the evidence</label>
+      <textarea class="form-control" id="evidenceDescription" name="evidenceDescription" rows="6">{{ evidence.description }}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="evidenceValidDoc">List of valide document for the evidence</label>
+      <textarea class="form-control" id="evidenceValidDoc" name="evidenceValidDoc" rows="6">{{ evidence.validDocument }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+{% endblock %}
+
+{% block script %}
+  {{ parent() }}
+  <script src="/javascripts/jquery-ui.min.js"></script>
+  <script>
+    jQuery(function($) {}})
+  </script>
+{% endblock %}

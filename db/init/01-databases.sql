@@ -87,3 +87,15 @@ CREATE TABLE IF NOT EXISTS `fkycedProcesses`
     PRIMARY KEY (`id`)
   )
   ENGINE=InnoDB;
+
+  CREATE TABLE IF NOT EXISTS `fkycedEvidences` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `required` tinyint(1) DEFAULT '0',
+    `description` varchar(255) DEFAULT NULL,
+    `validDocument` varchar(255) DEFAULT NULL,
+    `createdAt` datetime NOT NULL,
+    `updatedAt` datetime NOT NULL,
+    PRIMARY KEY (`id`)
+  )
+  ENGINE=InnoDB;

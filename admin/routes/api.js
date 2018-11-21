@@ -4,6 +4,8 @@ const models = require('../models')
 const camunda = require('../lib/camunda')
 const _ = require('lodash')
 const cors = require('cors')
+const Sequelize   = require('sequelize')
+const Op = Sequelize.Op
 
 router.get('/currentProcess', cors(), async function (req, res, next) {
   const activeProcess = await models.fkycedProcesses.findOne({ where: { active: true } })
@@ -68,6 +70,26 @@ router.post('/field/definition', cors(), async function (req, res, next) {
     } catch (error) {
       res.json({ status: 'error', msg: error })
     }
+  }
+})
+
+router.post('/evidence/', cors(), async function (req, res, next) {
+  let evidenceList = null
+  if (req.body && req.body.list) {
+    const rawEvidenceList = req.body.list
+    evidenceList = JSON.parse(rawEvidenceList)
+  }
+  if (evidenceList) {
+    const evidenceIds = _.map(evidenceList, 'id')
+    try {
+      const evidences = await models.fkycedEvidences.findAll({ where: { id: { [Op.in]: evidenceIds}}})
+      res.json({ status: 'success', value: evidences })
+    } catch (error) {
+      console.error(error)
+      res.json({ status: 'error', msg: error })
+    }
+  } else {
+    res.json({ status: 'error', msg: 'Evidence id list is required !' })
   }
 })
 
